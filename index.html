@@ -1,23 +1,224 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CakeClicker</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🍰 Kuchen Clicker</title>
+
+  <!-- Google Fonts: Nunito für ein warmes, gemütliches Feeling -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Stylesheets in Ladereihenfolge -->
+  <link rel="stylesheet" href="css/main.css" />
+  <link rel="stylesheet" href="css/shop.css" />
+  <link rel="stylesheet" href="css/animations.css" />
 </head>
 <body>
-    <h1>Welcome to <b>CakeClicker</h1>b></h1>
-    <p>We decided on making a simualure webapplication than CookieClicker but we wanted to use a cake instead of a Cookie.<br>
-    We want to have a cake that is clickable and several updates that when bought add on to the cake per second (Cps). We also<br>
-    Want to have a cosmatic shob that allows you to buy different Cake-Skins.<br>
-    Here is the List of features we want to have implimented<br>
-    </p>
-    <ol>
-        <li>A Cake that can be clicked</li>
-        <li>A upgrade feature on the right where you can click to upgrade the Cake per seconds</li>
-        <li>A Small Shop where you can choose and buy between <i>3 Skins</i></li>
-        <li>A way to navigate between all of the pages</li>
-    </ol>
-    <p>Our team consists out of Karim, Marko and Jonas</p>
+
+  <!-- ============================================================
+       ACHIEVEMENT TOAST – wird per JS ein-/ausgeblendet
+  ============================================================ -->
+  <div id="achievement-toast" class="achievement-toast" aria-live="polite">
+    <span class="achievement-toast__icon">🏆</span>
+    <div class="achievement-toast__text">
+      <strong id="achievement-toast-title">Erfolg!</strong>
+      <span id="achievement-toast-desc">Beschreibung</span>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       HAUPTLAYOUT: 3 Spalten
+  ============================================================ -->
+  <div class="app-wrapper">
+
+    <!-- ── LINKE SPALTE: Statistiken & Achievements ── -->
+    <aside class="panel panel--left" id="panel-left">
+
+      <header class="panel__header">
+        <h1 class="game-title">🍰 Kuchen&shy;Clicker</h1>
+      </header>
+
+      <!-- Kuchen-Statistiken -->
+      <section class="stats-box">
+        <div class="stat stat--main">
+          <span id="cookie-count" class="stat__value">0</span>
+          <span class="stat__label">Kuchen</span>
+        </div>
+        <div class="stat">
+          <span id="cps-display" class="stat__value">0</span>
+          <span class="stat__label">pro Sekunde</span>
+        </div>
+        <div class="stat">
+          <span id="cpc-display" class="stat__value">1</span>
+          <span class="stat__label">pro Klick</span>
+        </div>
+        <div class="stat stat--small">
+          <span class="stat__label">Gesamt produziert:</span>
+          <span id="total-cookies" class="stat__value stat__value--small">0</span>
+        </div>
+      </section>
+
+      <!-- Gebäude-Übersicht -->
+      <section class="owned-buildings">
+        <h2 class="section-title">Meine Gebäude</h2>
+        <ul id="owned-buildings-list" class="buildings-list">
+          <!-- Wird per JS befüllt -->
+          <li class="buildings-list__empty">Noch keine Gebäude</li>
+        </ul>
+      </section>
+
+      <!-- Achievements -->
+      <section class="achievements-section">
+        <h2 class="section-title">Erfolge</h2>
+        <div id="achievements-grid" class="achievements-grid">
+          <!-- Wird per JS befüllt -->
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- ── MITTLERE SPALTE: Spiel-Bereich ── -->
+    <main class="panel panel--center" id="panel-center">
+
+      <!-- Milestone-Anzeige -->
+      <div class="milestone-bar" id="milestone-bar">
+        <span id="milestone-text">Erstes Ziel: 10 Kuchen backen!</span>
+        <div class="milestone-progress-wrap">
+          <div class="milestone-progress" id="milestone-progress"></div>
+        </div>
+      </div>
+
+      <!-- Klickbarer Kuchen -->
+      <div class="cake-area">
+        <button
+          class="cake-btn"
+          id="cake-btn"
+          aria-label="Kuchen klicken"
+          title="Klick für Kuchen!"
+        >
+          <span class="cake-emoji" id="cake-emoji">🍰</span>
+        </button>
+
+        <!-- Partikel-Container (Float-Zahlen erscheinen hier) -->
+        <div class="cake-particles" id="cake-particles" aria-hidden="true"></div>
+      </div>
+
+      <!-- Kurzinfo unter dem Kuchen -->
+      <div class="cake-info">
+        <p id="cake-info-text" class="cake-info__text">
+          Klicke den Kuchen, um Kuchen zu backen!
+        </p>
+      </div>
+
+      <!-- Aktions-Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn--secondary" id="btn-save" title="Spiel manuell speichern">
+          💾 Speichern
+        </button>
+        <button class="btn btn--danger" id="btn-reset" title="Spielstand löschen">
+          🗑️ Zurücksetzen
+        </button>
+      </div>
+
+      <!-- Offline-Progress Banner (wird per JS gezeigt/versteckt) -->
+      <div class="offline-banner" id="offline-banner" hidden>
+        <span class="offline-banner__icon">⏰</span>
+        <span id="offline-banner-text">Willkommen zurück! Während deiner Abwesenheit wurden X Kuchen gebacken.</span>
+        <button class="offline-banner__close" id="offline-banner-close" aria-label="Schließen">✕</button>
+      </div>
+
+    </main>
+
+    <!-- ── RECHTE SPALTE: Shop ── -->
+    <aside class="panel panel--right" id="panel-right">
+
+      <header class="panel__header">
+        <h2 class="shop-title">🛒 Bäckerei-Shop</h2>
+        <!-- Tab-Navigation -->
+        <div class="shop-tabs" role="tablist">
+          <button
+            class="shop-tab shop-tab--active"
+            id="tab-buildings"
+            role="tab"
+            aria-selected="true"
+            aria-controls="shop-buildings"
+            data-tab="buildings"
+          >
+            🏠 Gebäude
+          </button>
+          <button
+            class="shop-tab"
+            id="tab-upgrades"
+            role="tab"
+            aria-selected="false"
+            aria-controls="shop-upgrades"
+            data-tab="upgrades"
+          >
+            ⬆️ Upgrades
+          </button>
+        </div>
+      </header>
+
+      <!-- Gebäude-Liste -->
+      <div
+        class="shop-panel shop-panel--active"
+        id="shop-buildings"
+        role="tabpanel"
+        aria-labelledby="tab-buildings"
+      >
+        <ul id="buildings-list" class="shop-list">
+          <!-- Wird per JS befüllt -->
+        </ul>
+      </div>
+
+      <!-- Upgrades-Liste -->
+      <div
+        class="shop-panel"
+        id="shop-upgrades"
+        role="tabpanel"
+        aria-labelledby="tab-upgrades"
+      >
+        <ul id="upgrades-list" class="shop-list">
+          <!-- Wird per JS befüllt -->
+        </ul>
+      </div>
+
+    </aside>
+
+  </div><!-- /.app-wrapper -->
+
+  <!-- ============================================================
+       RESET-BESTÄTIGUNGS-DIALOG
+  ============================================================ -->
+  <dialog class="confirm-dialog" id="reset-dialog">
+    <div class="confirm-dialog__content">
+      <h3 class="confirm-dialog__title">⚠️ Spielstand löschen?</h3>
+      <p class="confirm-dialog__text">
+        Alle Kuchen, Gebäude, Upgrades und Erfolge werden unwiderruflich gelöscht.
+        Bist du sicher?
+      </p>
+      <div class="confirm-dialog__buttons">
+        <button class="btn btn--secondary" id="reset-cancel">Abbrechen</button>
+        <button class="btn btn--danger" id="reset-confirm">Ja, alles löschen</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- ============================================================
+       JAVASCRIPT – Ladereihenfolge beachten!
+       1. game.js   → Zustand & Spiellogik (muss zuerst geladen sein)
+       2. upgrades.js → Upgrade-Definitionen (braucht game.js)
+       3. save.js   → Speichern/Laden
+       4. shop.js   → Shop-Logik
+       5. ui.js     → DOM-Updates (muss zuletzt geladen sein)
+  ============================================================ -->
+  <script src="js/game.js"></script>
+  <script src="js/upgrades.js"></script>
+  <script src="js/save.js"></script>
+  <script src="js/shop.js"></script>
+  <script src="js/ui.js"></script>
+
 </body>
 </html>
