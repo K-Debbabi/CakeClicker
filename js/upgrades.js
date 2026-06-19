@@ -1,254 +1,230 @@
-/**
- * upgrades.js – Alle Upgrade-Definitionen für Kuchen Clicker
- * ============================================================
- * Diese Datei definiert das UPGRADES-Array mit allen verfügbaren
- * Upgrades. Jedes Upgrade-Objekt enthält:
- *
- *   id          {string}   – eindeutiger Schlüssel (kein Leerzeichen)
- *   name        {string}   – Anzeigename im Shop
- *   icon        {string}   – Emoji-Icon
- *   description {string}   – kurze Beschreibung was das Upgrade macht
- *   price       {number}   – Kosten in Kuchen
- *   type        {string}   – 'click' | 'building' | 'all_buildings'
- *   multiplier  {number}   – Faktor um den die Produktion steigt
- *   buildingId  {string}   – (nur für type='building') welches Gebäude
- *   condition   {function} – (state) => boolean: Wann im Shop sichtbar?
- *
- * Muss NACH game.js und VOR shop.js geladen werden.
- */
-
 'use strict';
 
 /* ==========================================================================
-   UPGRADES-ARRAY – mindestens 15 Upgrades, verschiedene Typen
+   UPGRADES – Kuchen Clicker ULTRA (35+ Upgrades)
    ========================================================================== */
 const UPGRADES = [
 
-  // ─────────────────────────────────────────────
-  //  KLICK-UPGRADES (verbessern cookiesPerClick)
-  // ─────────────────────────────────────────────
+  // ─── CLICK UPGRADES ───────────────────────────────────────────────────────
 
   {
-    id:          'bessere_butter',
-    name:        'Bessere Butter',
-    icon:        '🧈',
+    id: 'bessere_butter', name: 'Bessere Butter', icon: '🧈',
     description: 'Hochwertige Almbutter macht jeden Klick doppelt so lecker.',
-    price:       50,
-    type:        'click',
-    multiplier:  2,
-    // Sofort verfügbar nach ein paar Klicks
-    condition:   (s) => s.totalClicks >= 1,
+    price: 50, type: 'click', multiplier: 2,
+    condition: s => s.totalClicks >= 1,
   },
-
   {
-    id:          'zuckerguss',
-    name:        'Zuckerguss',
-    icon:        '🍬',
-    description: 'Glänzender Zuckerguss verleiht jedem Kuchen extra Kraft.',
-    price:       250,
-    type:        'click',
-    multiplier:  2,
-    // Nach 100 Gesamtkuchen
-    condition:   (s) => s.totalCookies >= 100,
+    id: 'zuckerguss', name: 'Zuckerguss', icon: '🍬',
+    description: 'Glänzender Zuckerguss verleiht jedem Klick extra Kraft.',
+    price: 250, type: 'click', multiplier: 2,
+    condition: s => s.totalCookies >= 100,
   },
-
   {
-    id:          'goldene_backform',
-    name:        'Goldene Backform',
-    icon:        '🥇',
+    id: 'goldene_backform', name: 'Goldene Backform', icon: '🥇',
     description: 'Eine vergoldete Backform bringt dreifachen Kuchengenuss.',
-    price:       5_000,
-    type:        'click',
-    multiplier:  3,
-    // Ab 2.000 Gesamtkuchen
-    condition:   (s) => s.totalCookies >= 2_000,
+    price: 5_000, type: 'click', multiplier: 3,
+    condition: s => s.totalCookies >= 2_000,
   },
-
   {
-    id:          'kristallzucker',
-    name:        'Kristallzucker',
-    icon:        '💎',
+    id: 'kristallzucker', name: 'Kristallzucker', icon: '💎',
     description: 'Seltener Kristallzucker – doppelt so süß, doppelt so mächtig.',
-    price:       50_000,
-    type:        'click',
-    multiplier:  2,
-    condition:   (s) => s.totalCookies >= 30_000,
+    price: 50_000, type: 'click', multiplier: 2,
+    condition: s => s.totalCookies >= 30_000,
   },
-
   {
-    id:          'goldener_spatel',
-    name:        'Goldener Spatel',
-    icon:        '🔱',
-    description: 'Der legendäre goldene Spatel des Meisterbäckers. Extrem wirksam.',
-    price:       500_000,
-    type:        'click',
-    multiplier:  5,
-    condition:   (s) => s.totalCookies >= 200_000,
+    id: 'goldener_spatel', name: 'Goldener Spatel', icon: '🔱',
+    description: 'Der legendäre goldene Spatel des Meisterbäckers.',
+    price: 500_000, type: 'click', multiplier: 5,
+    condition: s => s.totalCookies >= 200_000,
   },
-
   {
-    id:          'zauberstab_des_baeckers',
-    name:        'Zauberstab des Bäckers',
-    icon:        '🪄',
+    id: 'zauberstab_baecker', name: 'Zauberstab des Bäckers', icon: '🪄',
     description: 'Magische Kräfte fließen in jeden Klick. Zehnfache Kraft!',
-    price:       5_000_000,
-    type:        'click',
-    multiplier:  10,
-    condition:   (s) => s.totalCookies >= 1_000_000,
+    price: 5_000_000, type: 'click', multiplier: 10,
+    condition: s => s.totalCookies >= 1_000_000,
+  },
+  {
+    id: 'goetterklick', name: 'Götterklick', icon: '⚡',
+    description: 'Der Fingerdruck eines Gottes. Unvorstellbare Klickkraft.',
+    price: 100_000_000, type: 'click', multiplier: 20,
+    condition: s => s.totalCookies >= 50_000_000,
+  },
+  {
+    id: 'kosmischer_finger', name: 'Kosmischer Finger', icon: '🌌',
+    description: 'Dein Finger enthält die Kraft eines ganzen Universums.',
+    price: 5_000_000_000, type: 'click', multiplier: 50,
+    condition: s => s.totalCookies >= 1_000_000_000,
   },
 
-  // ─────────────────────────────────────────────
-  //  HAUSBACKOFEN-UPGRADES
-  // ─────────────────────────────────────────────
+  // ─── CRIT UPGRADES ────────────────────────────────────────────────────────
 
   {
-    id:          'backschule',
-    name:        'Backschule',
-    icon:        '📚',
-    description: 'Professionelle Backkurse verdoppeln die Effizienz aller Hausbacköfen.',
-    price:       200,
-    type:        'building',
-    buildingId:  'hausbackofen',
-    multiplier:  2,
-    // Erst wenn 1 Hausbackofen vorhanden
-    condition:   (s) => s.buildings['hausbackofen']?.count >= 1,
+    id: 'scharfe_augen', name: 'Scharfe Augen', icon: '👁️',
+    description: 'Du triffst öfter kritisch. +3% kritische Trefferchance.',
+    price: 10_000, type: 'crit_chance', critBonus: 0.03,
+    condition: s => s.totalCriticalClicks >= 1,
+  },
+  {
+    id: 'meisterpräzision', name: 'Meisterpräzision', icon: '🎯',
+    description: 'Präzision eines Meisterbäckers. +5% kritische Trefferchance.',
+    price: 500_000, type: 'crit_chance', critBonus: 0.05,
+    condition: s => s.totalCriticalClicks >= 10,
+  },
+  {
+    id: 'goettliche_praezision', name: 'Göttliche Präzision', icon: '✨',
+    description: 'Göttliche Präzision beim Klicken. +7% kritische Trefferchance.',
+    price: 50_000_000, type: 'crit_chance', critBonus: 0.07,
+    condition: s => s.totalCriticalClicks >= 50,
   },
 
+  // ─── HAUSBACKOFEN ─────────────────────────────────────────────────────────
+
   {
-    id:          'dampfbackofen',
-    name:        'Dampfbackofen',
-    icon:        '♨️',
-    description: 'Moderner Dampfgarer verdoppelt die Produktion der Hausbacköfen nochmals.',
-    price:       2_500,
-    type:        'building',
-    buildingId:  'hausbackofen',
-    multiplier:  2,
-    condition:   (s) => s.buildings['hausbackofen']?.count >= 5,
+    id: 'backschule', name: 'Backschule', icon: '📚',
+    description: 'Professionelle Backkurse verdoppeln die Ofeneffizienz.',
+    price: 200, type: 'building', buildingId: 'hausbackofen', multiplier: 2,
+    condition: s => (s.buildings['hausbackofen']?.count ?? 0) >= 1,
+  },
+  {
+    id: 'dampfbackofen', name: 'Dampfbackofen', icon: '♨️',
+    description: 'Moderner Dampfgarer verdoppelt die Ofenproduktion nochmals.',
+    price: 2_500, type: 'building', buildingId: 'hausbackofen', multiplier: 2,
+    condition: s => (s.buildings['hausbackofen']?.count ?? 0) >= 5,
+  },
+  {
+    id: 'ultraofen', name: 'Ultra-Ofen', icon: '🌋',
+    description: 'Vulkanische Hitze für dreifache Ofenleistung.',
+    price: 100_000, type: 'building', buildingId: 'hausbackofen', multiplier: 3,
+    condition: s => (s.buildings['hausbackofen']?.count ?? 0) >= 20,
   },
 
-  // ─────────────────────────────────────────────
-  //  KLEINE BÄCKEREI-UPGRADES
-  // ─────────────────────────────────────────────
+  // ─── KLEINE BÄCKEREI ──────────────────────────────────────────────────────
 
   {
-    id:          'profi_mixer',
-    name:        'Profi-Mixer',
-    icon:        '🥣',
-    description: 'Industrielle Rührmaschinen für die Bäckerei. Doppelte Kapazität!',
-    price:       1_500,
-    type:        'building',
-    buildingId:  'kleine_baeckerei',
-    multiplier:  2,
-    condition:   (s) => s.buildings['kleine_baeckerei']?.count >= 1,
+    id: 'profi_mixer', name: 'Profi-Mixer', icon: '🥣',
+    description: 'Industriemixer für doppelte Bäckereikapazität.',
+    price: 1_500, type: 'building', buildingId: 'kleine_baeckerei', multiplier: 2,
+    condition: s => (s.buildings['kleine_baeckerei']?.count ?? 0) >= 1,
+  },
+  {
+    id: 'baeckerei_expansion', name: 'Bäckerei-Expansion', icon: '📐',
+    description: 'Anbau und Erweiterung. Viermal mehr Kapazität.',
+    price: 20_000, type: 'building', buildingId: 'kleine_baeckerei', multiplier: 4,
+    condition: s => (s.buildings['kleine_baeckerei']?.count ?? 0) >= 5,
   },
 
-  {
-    id:          'grosbbaeckerei_expansion',
-    name:        'Bäckerei-Expansion',
-    icon:        '📐',
-    description: 'Anbau und Erweiterung. Die Bäckereien produzieren viermal mehr.',
-    price:       20_000,
-    type:        'building',
-    buildingId:  'kleine_baeckerei',
-    multiplier:  4,
-    condition:   (s) => s.buildings['kleine_baeckerei']?.count >= 5,
-  },
-
-  // ─────────────────────────────────────────────
-  //  KONDITOREI-UPGRADES
-  // ─────────────────────────────────────────────
+  // ─── KONDITOREI ───────────────────────────────────────────────────────────
 
   {
-    id:          'konditor_kurs',
-    name:        'Konditor-Meisterkurs',
-    icon:        '🎓',
+    id: 'konditor_kurs', name: 'Konditor-Meisterkurs', icon: '🎓',
     description: 'Zertifizierte Konditoren verdoppeln die Tortenproduktion.',
-    price:       10_000,
-    type:        'building',
-    buildingId:  'konditorei',
-    multiplier:  2,
-    condition:   (s) => s.buildings['konditorei']?.count >= 1,
+    price: 10_000, type: 'building', buildingId: 'konditorei', multiplier: 2,
+    condition: s => (s.buildings['konditorei']?.count ?? 0) >= 1,
+  },
+  {
+    id: 'schweizer_schokolade', name: 'Schweizer Schokolade', icon: '🍫',
+    description: 'Edle Schokolade verdoppelt Qualität und Menge der Konditorei.',
+    price: 100_000, type: 'building', buildingId: 'konditorei', multiplier: 2,
+    condition: s => (s.buildings['konditorei']?.count ?? 0) >= 5,
   },
 
+  // ─── KUCHENFABRIK ─────────────────────────────────────────────────────────
+
   {
-    id:          'schweizer_schokolade',
-    name:        'Schweizer Schokolade',
-    icon:        '🍫',
-    description: 'Edle Schokolade aus der Schweiz verdoppelt Qualität und Menge.',
-    price:       100_000,
-    type:        'building',
-    buildingId:  'konditorei',
-    multiplier:  2,
-    condition:   (s) => s.buildings['konditorei']?.count >= 5,
+    id: 'auto_kuchenform', name: 'Automatische Kuchenformen', icon: '🤖',
+    description: 'Robotergestützte Formen verdoppeln den Fabrikausstoß.',
+    price: 60_000, type: 'building', buildingId: 'kuchenfabrik', multiplier: 2,
+    condition: s => (s.buildings['kuchenfabrik']?.count ?? 0) >= 1,
+  },
+  {
+    id: 'nano_roboter', name: 'Nano-Roboter', icon: '🔬',
+    description: 'Winzige Nano-Roboter optimieren jeden Produktionsschritt. x3 Fabrik.',
+    price: 5_000_000, type: 'building', buildingId: 'kuchenfabrik', multiplier: 3,
+    condition: s => (s.buildings['kuchenfabrik']?.count ?? 0) >= 10,
   },
 
-  // ─────────────────────────────────────────────
-  //  KUCHENFABRIK-UPGRADES
-  // ─────────────────────────────────────────────
+  // ─── MAGISCHE KUCHENMASCHINE ──────────────────────────────────────────────
 
   {
-    id:          'automatische_kuchenform',
-    name:        'Automatische Kuchenformen',
-    icon:        '🤖',
-    description: 'Robotergestützte Formen verdoppeln den Fabrik-Ausstoß.',
-    price:       60_000,
-    type:        'building',
-    buildingId:  'kuchenfabrik',
-    multiplier:  2,
-    condition:   (s) => s.buildings['kuchenfabrik']?.count >= 1,
+    id: 'magische_hefe', name: 'Magische Hefe', icon: '🧪',
+    description: 'Geheimnisvolle Hefe verdoppelt die Maschinenleistung.',
+    price: 400_000, type: 'building', buildingId: 'magische_kuchenmaschine', multiplier: 2,
+    condition: s => (s.buildings['magische_kuchenmaschine']?.count ?? 0) >= 1,
+  },
+  {
+    id: 'arkane_kristalle', name: 'Arkane Kristalle', icon: '🔮',
+    description: 'Arkane Kraftkristalle dreifachen die magische Produktion.',
+    price: 10_000_000, type: 'building', buildingId: 'magische_kuchenmaschine', multiplier: 3,
+    condition: s => (s.buildings['magische_kuchenmaschine']?.count ?? 0) >= 5,
   },
 
-  // ─────────────────────────────────────────────
-  //  GLOBALE UPGRADES (alle Gebäude)
-  // ─────────────────────────────────────────────
+  // ─── KUCHENPORTAL ─────────────────────────────────────────────────────────
 
   {
-    id:          'geheimrezept',
-    name:        'Geheimes Familienrezept',
-    icon:        '📜',
-    description: 'Ein uraltes Rezept steigert die Produktion ALLER Gebäude um 50%.',
-    price:       25_000,
-    type:        'all_buildings',
-    multiplier:  1.5,
-    condition:   (s) => s.totalCookies >= 10_000,
+    id: 'dimensionsloch', name: 'Dimensionsloch', icon: '🌀',
+    description: 'Ein stabiles Dimensionsloch verdoppelt den Portaldurchfluss.',
+    price: 3_000_000, type: 'building', buildingId: 'kuchenportal', multiplier: 2,
+    condition: s => (s.buildings['kuchenportal']?.count ?? 0) >= 1,
   },
 
+  // ─── ZEITBÄCKEREI ─────────────────────────────────────────────────────────
+
   {
-    id:          'zauberzucker',
-    name:        'Zauberzucker',
-    icon:        '🌈',
+    id: 'zeitkristall', name: 'Zeitkristall', icon: '⌚',
+    description: 'Komprimierte Zeitkristalle verdoppeln die Zeitbäckerei.',
+    price: 20_000_000, type: 'building', buildingId: 'zeitbaeckerei', multiplier: 2,
+    condition: s => (s.buildings['zeitbaeckerei']?.count ?? 0) >= 1,
+  },
+
+  // ─── KUCHENPLANET ─────────────────────────────────────────────────────────
+
+  {
+    id: 'planetenkern', name: 'Kuchenplanetenkern', icon: '🔥',
+    description: 'Der glühende Kern des Kuchenplaneten produziert dreifach.',
+    price: 200_000_000, type: 'building', buildingId: 'kuchenplanet', multiplier: 3,
+    condition: s => (s.buildings['kuchenplanet']?.count ?? 0) >= 1,
+  },
+
+  // ─── KUCHENGALAXIE ────────────────────────────────────────────────────────
+
+  {
+    id: 'schwarzes_loch', name: 'Kuchen-Schwarzes-Loch', icon: '⚫',
+    description: 'Das Schwarze Loch der Galaxis komprimiert und verdoppelt alle Energie.',
+    price: 5_000_000_000, type: 'building', buildingId: 'kuchengalaxie', multiplier: 2,
+    condition: s => (s.buildings['kuchengalaxie']?.count ?? 0) >= 1,
+  },
+
+  // ─── GLOBALE UPGRADES ─────────────────────────────────────────────────────
+
+  {
+    id: 'geheimrezept', name: 'Geheimes Familienrezept', icon: '📜',
+    description: 'Ein uraltes Rezept steigert ALLE Gebäude um 50%.',
+    price: 25_000, type: 'all_buildings', multiplier: 1.5,
+    condition: s => s.totalCookies >= 10_000,
+  },
+  {
+    id: 'zauberzucker', name: 'Zauberzucker', icon: '🌈',
     description: 'Magischer Zucker aus dem Feenwald. Verdoppelt alle Gebäude!',
-    price:       500_000,
-    type:        'all_buildings',
-    multiplier:  2,
-    condition:   (s) => s.totalCookies >= 200_000,
+    price: 500_000, type: 'all_buildings', multiplier: 2,
+    condition: s => s.totalCookies >= 200_000,
   },
-
   {
-    id:          'kuchengott_segen',
-    name:        'Segen des Kuchengottes',
-    icon:        '✨',
-    description: 'Der Kuchengott selbst segnet alle deine Gebäude. Dreifache Kraft!',
-    price:       10_000_000,
-    type:        'all_buildings',
-    multiplier:  3,
-    condition:   (s) => s.totalCookies >= 5_000_000,
+    id: 'kuchengott_segen', name: 'Segen des Kuchengottes', icon: '🌟',
+    description: 'Der Kuchengott segnet alle Gebäude. Dreifache Kraft!',
+    price: 10_000_000, type: 'all_buildings', multiplier: 3,
+    condition: s => s.totalCookies >= 5_000_000,
   },
-
-  // ─────────────────────────────────────────────
-  //  MAGISCHE KUCHENMASCHINE-UPGRADES
-  // ─────────────────────────────────────────────
-
   {
-    id:          'magische_hefe',
-    name:        'Magische Hefe',
-    icon:        '🧪',
-    description: 'Geheimnisvolle Hefe aus dem Zauberwald. Verdoppelt die Maschinen.',
-    price:       400_000,
-    type:        'building',
-    buildingId:  'magische_kuchenmaschine',
-    multiplier:  2,
-    condition:   (s) => s.buildings['magische_kuchenmaschine']?.count >= 1,
+    id: 'universum_rezept', name: 'Universalrezept', icon: '🔭',
+    description: 'Die Ur-Formel des Universums. x5 für alle Gebäude!',
+    price: 1_000_000_000, type: 'all_buildings', multiplier: 5,
+    condition: s => s.totalCookies >= 500_000_000,
+  },
+  {
+    id: 'goettliches_backen', name: 'Göttliches Backen', icon: '⚡',
+    description: 'Göttliches Wissen transformiert alle Gebäude. x10!',
+    price: 100_000_000_000, type: 'all_buildings', multiplier: 10,
+    condition: s => s.totalCookies >= 50_000_000_000,
   },
 
 ];

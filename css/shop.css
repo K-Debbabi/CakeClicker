@@ -1,160 +1,192 @@
 /* ==========================================================================
-   shop.css – Styles für den Bäckerei-Shop (rechte Spalte)
-   Enthält: Shop-Layout, Tab-Navigation, Gebäude-Karten, Upgrade-Karten,
-            Zustands-Varianten (kaufbar, nicht kaufbar, bereits gekauft)
+   shop.css – Kuchen Clicker ULTRA Shop Styles (Dark Theme)
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   RECHTE SPALTE – Shop-Panel
+   RIGHT PANEL – Shop container
    -------------------------------------------------------------------------- */
 .panel--right {
-  border-left: 2px solid var(--color-pink-light);
-  background-color: var(--color-bg);
-  overflow: hidden; /* Shop-Content scrollt, Header nicht */
-  display: flex;
-  flex-direction: column;
+  background: var(--bg-secondary);
+  border-left: var(--border-purple);
+  overflow: hidden;
 }
 
-/* Shop-Titel im Header */
 .shop-title {
-  font-size: var(--font-size-lg);
+  font-family: var(--font-head);
+  font-size: var(--font-size-base);
   font-weight: 900;
-  color: var(--color-brown-dark);
+  color: var(--accent-purple);
+  text-shadow: var(--glow-purple);
   margin-bottom: var(--spacing-sm);
+  letter-spacing: 1px;
 }
 
 /* --------------------------------------------------------------------------
-   TAB-NAVIGATION
+   TAB NAVIGATION
    -------------------------------------------------------------------------- */
 .shop-tabs {
   display: flex;
-  gap: var(--spacing-xs);
-  background-color: var(--color-bg-dark);
-  padding: var(--spacing-xs);
+  gap: 4px;
+  background: rgba(167, 139, 250, 0.05);
   border-radius: var(--radius-md);
+  padding: 3px;
+  border: var(--border-purple);
 }
 
 .shop-tab {
   flex: 1;
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: 6px 4px;
   border-radius: var(--radius-sm);
-  font-size: var(--font-size-sm);
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--color-brown-light);
+  color: var(--text-muted);
   background: none;
   border: none;
   cursor: pointer;
-  transition:
-    background-color var(--transition-fast),
-    color var(--transition-fast),
-    box-shadow var(--transition-fast);
+  transition: all var(--transition-fast);
   text-align: center;
+  white-space: nowrap;
+  letter-spacing: 0.2px;
 }
 
 .shop-tab:hover {
-  color: var(--color-brown-dark);
-  background-color: var(--color-white);
+  color: var(--text-secondary);
+  background: rgba(167, 139, 250, 0.08);
 }
 
 .shop-tab--active {
-  background-color: var(--color-white);
-  color: var(--color-brown-dark);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(135deg, rgba(255, 107, 214, 0.2), rgba(167, 139, 250, 0.15));
+  color: var(--accent-pink);
+  box-shadow: 0 0 8px rgba(255, 107, 214, 0.2);
+  border: var(--border-pink);
 }
 
 /* --------------------------------------------------------------------------
-   SHOP-PANEL (Tab-Inhalt)
+   SHOP PANELS
    -------------------------------------------------------------------------- */
 .shop-panel {
-  display: none; /* Standardmäßig versteckt */
-  flex: 1;
+  display: none;
   overflow-y: auto;
-  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-lg);
+  flex: 1;
+  min-height: 0;
 }
 
-.shop-panel--active {
-  display: block;
+.shop-panel--active { display: flex; flex-direction: column; }
+
+.shop-list {
+  padding: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-/* Scrollbar für Shop */
-.shop-panel::-webkit-scrollbar {
-  width: 6px;
+.shop-empty {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  padding: var(--spacing-xl) var(--spacing-md);
+  background: rgba(167, 139, 250, 0.03);
+  border-radius: var(--radius-md);
+  border: var(--border-purple);
+  margin: var(--spacing-sm);
 }
 
-.shop-panel::-webkit-scrollbar-track {
-  background: transparent;
-}
-
+/* Scrollbar for shop panels */
+.shop-panel::-webkit-scrollbar { width: 4px; }
+.shop-panel::-webkit-scrollbar-track { background: transparent; }
 .shop-panel::-webkit-scrollbar-thumb {
-  background-color: var(--color-pink-light);
+  background: rgba(255, 107, 214, 0.25);
   border-radius: var(--radius-full);
 }
 
-.shop-panel::-webkit-scrollbar-thumb:hover {
-  background-color: var(--color-pink);
-}
-
 /* --------------------------------------------------------------------------
-   SHOP-LISTE (gemeinsame Basis)
-   -------------------------------------------------------------------------- */
-.shop-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  padding: 0;
-}
-
-/* --------------------------------------------------------------------------
-   GEBÄUDE-KARTE
+   BUILDING CARDS
    -------------------------------------------------------------------------- */
 .building-card {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-sm) 10px;
   border-radius: var(--radius-md);
-  border: 2px solid transparent;
-  background-color: var(--color-white);
   cursor: pointer;
-  transition:
-    border-color var(--transition-fast),
-    background-color var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+  background: var(--bg-card);
+  border: var(--border-purple);
+  transition: all var(--transition-fast);
   position: relative;
   overflow: hidden;
   user-select: none;
 }
 
-/* Schimmer-Effekt beim Hover (kaufbar) */
 .building-card::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
+  background: linear-gradient(90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.4) 50%,
-    transparent 100%
-  );
-  transform: translateX(-100%);
-  transition: transform 0.5s ease;
-  pointer-events: none;
+    rgba(255, 255, 255, 0.03) 50%,
+    transparent 100%);
+  background-size: 200% 100%;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
 }
 
 .building-card:hover::before {
-  transform: translateX(100%);
+  opacity: 1;
+  animation: cardShimmer 1.5s linear infinite;
 }
 
-/* Gebäude-Icon */
+@keyframes cardShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.building-card:hover {
+  background: var(--bg-card-hover);
+  transform: translateX(3px);
+}
+
+.building-card:active {
+  transform: translateX(1px) scale(0.98);
+}
+
+/* AFFORDABLE */
+.building-card--affordable {
+  border-color: rgba(74, 222, 128, 0.4);
+  background: linear-gradient(135deg,
+    rgba(74, 222, 128, 0.05) 0%,
+    var(--bg-card) 100%);
+}
+
+.building-card--affordable:hover {
+  border-color: rgba(74, 222, 128, 0.7);
+  background: linear-gradient(135deg,
+    rgba(74, 222, 128, 0.1) 0%,
+    var(--bg-card-hover) 100%);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.2);
+}
+
+/* UNAFFORDABLE */
+.building-card--unaffordable {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.building-card--unaffordable:hover {
+  transform: none;
+  background: var(--bg-card);
+  box-shadow: none;
+}
+
+/* Parts */
 .building-card__icon {
-  font-size: 2rem;
+  font-size: 1.6rem;
   flex-shrink: 0;
-  width: 44px;
+  width: 36px;
   text-align: center;
+  filter: drop-shadow(0 0 4px rgba(255, 107, 214, 0.4));
 }
 
-/* Gebäude-Info (Name, Beschreibung) */
 .building-card__info {
   flex: 1;
   min-width: 0;
@@ -163,7 +195,7 @@
 .building-card__name {
   font-size: var(--font-size-sm);
   font-weight: 800;
-  color: var(--color-brown-dark);
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -171,296 +203,160 @@
 
 .building-card__desc {
   font-size: var(--font-size-xs);
-  color: var(--color-brown-light);
-  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.4;
   margin-top: 1px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .building-card__cps {
   font-size: var(--font-size-xs);
-  color: var(--color-green);
+  color: var(--accent-cyan);
   font-weight: 700;
   margin-top: 2px;
 }
 
-/* Rechte Seite: Preis & Anzahl */
 .building-card__right {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
+  gap: 3px;
   flex-shrink: 0;
 }
 
 .building-card__price {
-  font-size: var(--font-size-sm);
-  font-weight: 800;
-  color: var(--color-brown-dark);
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: var(--font-size-xs);
+  font-weight: 900;
+  color: var(--accent-gold);
   white-space: nowrap;
 }
 
-.building-card__price-icon {
-  margin-right: 2px;
+.building-card__price-icon { font-size: 0.8rem; }
+
+.building-card--affordable .building-card__price {
+  color: var(--accent-green);
+  text-shadow: var(--glow-green);
 }
 
 .building-card__count {
+  background: linear-gradient(135deg, var(--accent-pink-dim), var(--accent-purple));
+  color: #fff;
   font-size: var(--font-size-xs);
-  font-weight: 800;
-  background-color: var(--color-pink);
-  color: var(--color-white);
-  padding: 2px 8px;
+  font-weight: 900;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
-  min-width: 28px;
+  min-width: 26px;
   text-align: center;
+  box-shadow: 0 0 6px rgba(192, 38, 211, 0.4);
 }
 
 /* --------------------------------------------------------------------------
-   GEBÄUDE-KARTE – ZUSTÄNDE
-   -------------------------------------------------------------------------- */
-
-/* Kaufbar: grüner Rahmen, hellgrüner Hintergrund */
-.building-card--affordable {
-  border-color: var(--color-green);
-  background-color: var(--color-green-light);
-}
-
-.building-card--affordable .building-card__name {
-  color: var(--color-brown-dark);
-}
-
-.building-card--affordable:hover {
-  transform: translateY(-2px) scale(1.01);
-  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.2);
-}
-
-.building-card--affordable:active {
-  transform: scale(0.99);
-}
-
-.building-card--affordable .building-card__price {
-  color: var(--color-green);
-}
-
-/* Nicht leistbar: ausgegraut */
-.building-card--unaffordable {
-  border-color: var(--color-gray-light);
-  background-color: var(--color-gray-light);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.building-card--unaffordable .building-card__name {
-  color: var(--color-gray);
-}
-
-.building-card--unaffordable .building-card__price {
-  color: var(--color-gray);
-}
-
-.building-card--unaffordable .building-card__count {
-  background-color: var(--color-gray);
-}
-
-.building-card--unaffordable:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-/* Gerade erst gekauft: kurzer Pulse */
-.building-card--just-bought {
-  animation: buyPulse 0.4s ease;
-}
-
-/* --------------------------------------------------------------------------
-   UPGRADE-KARTE
+   UPGRADE CARDS
    -------------------------------------------------------------------------- */
 .upgrade-card {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-sm) 10px;
   border-radius: var(--radius-md);
-  border: 2px solid transparent;
-  background-color: var(--color-white);
   cursor: pointer;
-  transition:
-    border-color var(--transition-fast),
-    background-color var(--transition-fast),
-    transform var(--transition-fast),
-    box-shadow var(--transition-fast);
+  background: var(--bg-card);
+  border: var(--border-purple);
+  transition: all var(--transition-fast);
   position: relative;
-  overflow: hidden;
   user-select: none;
 }
 
-/* Upgrade-Icon */
-.upgrade-card__icon {
-  font-size: 1.6rem;
-  flex-shrink: 0;
-  width: 38px;
-  text-align: center;
+.upgrade-card:hover {
+  background: var(--bg-card-hover);
+  transform: translateX(3px);
 }
 
-/* Upgrade-Info */
-.upgrade-card__info {
-  flex: 1;
-  min-width: 0;
+/* AFFORDABLE */
+.upgrade-card--affordable {
+  border-color: rgba(34, 211, 238, 0.4);
+  background: linear-gradient(135deg, rgba(34, 211, 238, 0.05), var(--bg-card));
 }
+
+.upgrade-card--affordable:hover {
+  border-color: rgba(34, 211, 238, 0.7);
+  box-shadow: 0 0 12px rgba(34, 211, 238, 0.2);
+}
+
+/* UNAVAILABLE */
+.upgrade-card--unavailable {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.upgrade-card--unavailable:hover {
+  transform: none;
+  background: var(--bg-card);
+}
+
+/* PURCHASED */
+.upgrade-card--purchased {
+  opacity: 0.35;
+  cursor: default;
+  background: rgba(74, 222, 128, 0.03);
+  border-color: rgba(74, 222, 128, 0.15);
+}
+
+.upgrade-card--purchased:hover {
+  transform: none;
+  background: rgba(74, 222, 128, 0.03);
+}
+
+.upgrade-card__icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+  width: 32px;
+  text-align: center;
+  filter: drop-shadow(0 0 4px rgba(34, 211, 238, 0.4));
+}
+
+.upgrade-card--purchased .upgrade-card__icon {
+  filter: grayscale(0.5);
+}
+
+.upgrade-card__info { flex: 1; min-width: 0; }
 
 .upgrade-card__name {
   font-size: var(--font-size-sm);
   font-weight: 800;
-  color: var(--color-brown-dark);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--text-primary);
+}
+
+.upgrade-card--purchased .upgrade-card__name {
+  text-decoration: line-through;
+  color: var(--text-muted);
 }
 
 .upgrade-card__desc {
   font-size: var(--font-size-xs);
-  color: var(--color-brown-light);
-  font-weight: 600;
+  color: var(--text-muted);
+  line-height: 1.4;
   margin-top: 1px;
 }
 
 .upgrade-card__effect {
   font-size: var(--font-size-xs);
-  color: var(--color-gold);
+  color: var(--accent-purple);
   font-weight: 700;
   margin-top: 2px;
 }
 
-/* Preis */
 .upgrade-card__price {
-  font-size: var(--font-size-sm);
-  font-weight: 800;
-  color: var(--color-brown-dark);
-  flex-shrink: 0;
+  font-size: var(--font-size-xs);
+  font-weight: 900;
+  color: var(--accent-gold);
   white-space: nowrap;
-}
-
-/* --------------------------------------------------------------------------
-   UPGRADE-KARTE – ZUSTÄNDE
-   -------------------------------------------------------------------------- */
-
-/* Verfügbar und kaufbar */
-.upgrade-card--affordable {
-  border-color: var(--color-gold);
-  background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
-}
-
-.upgrade-card--affordable:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
-}
-
-.upgrade-card--affordable:active {
-  transform: scale(0.99);
+  flex-shrink: 0;
 }
 
 .upgrade-card--affordable .upgrade-card__price {
-  color: var(--color-gold);
-}
-
-/* Verfügbar aber nicht leistbar */
-.upgrade-card--unavailable {
-  border-color: var(--color-gray-light);
-  background-color: var(--color-gray-light);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-.upgrade-card--unavailable .upgrade-card__price {
-  color: var(--color-gray);
-}
-
-.upgrade-card--unavailable:hover {
-  transform: none;
-  box-shadow: none;
-}
-
-/* Bereits gekauft – ausgegraut & durchgestrichen */
-.upgrade-card--purchased {
-  border-color: transparent;
-  background-color: var(--color-gray-light);
-  cursor: default;
-  opacity: 0.45;
-}
-
-.upgrade-card--purchased .upgrade-card__name {
-  text-decoration: line-through;
-  color: var(--color-gray);
-}
-
-.upgrade-card--purchased .upgrade-card__price {
-  display: none;
-}
-
-.upgrade-card--purchased:hover {
-  transform: none;
-}
-
-/* Gekauft-Stempel */
-.upgrade-card--purchased::after {
-  content: '✓ Gekauft';
-  position: absolute;
-  right: var(--spacing-sm);
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  color: var(--color-gray);
-}
-
-/* Versteckt (Bedingung nicht erfüllt) */
-.upgrade-card--hidden {
-  display: none;
-}
-
-/* --------------------------------------------------------------------------
-   SHOP – ABSCHNITT-HEADER (optional, falls Kategorien gewünscht)
-   -------------------------------------------------------------------------- */
-.shop-section-header {
-  font-size: var(--font-size-xs);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--color-brown-light);
-  padding: var(--spacing-sm) 0 var(--spacing-xs);
-  border-bottom: 1px solid var(--color-pink-light);
-  margin-bottom: var(--spacing-xs);
-}
-
-/* --------------------------------------------------------------------------
-   SHOP – LEER-ZUSTAND
-   -------------------------------------------------------------------------- */
-.shop-empty {
-  text-align: center;
-  padding: var(--spacing-xl);
-  color: var(--color-gray);
-  font-size: var(--font-size-sm);
-  font-style: italic;
-}
-
-/* --------------------------------------------------------------------------
-   TOOLTIP für Gebäude (hover-Vorschau CPS-Beitrag)
-   -------------------------------------------------------------------------- */
-.building-card[data-tooltip]:hover::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
-  background-color: var(--color-brown-dark);
-  color: var(--color-white);
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 50;
+  color: var(--accent-green);
+  text-shadow: var(--glow-green);
 }

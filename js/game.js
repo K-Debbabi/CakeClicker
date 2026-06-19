@@ -1,372 +1,305 @@
-/**
- * game.js – Zentrale Spiellogik für Kuchen Clicker
- * =====================================================
- * Diese Datei enthält:
- *  - CONFIG: Alle Spielkonstanten an einem Ort
- *  - BUILDINGS: Array mit allen Gebäude-Definitionen
- *  - ACHIEVEMENTS: Array mit allen Erfolgs-Definitionen
- *  - gameState: Das zentrale Spielzustands-Objekt
- *  - Game: Modul mit Init-, Tick- und Kern-Spielfunktionen
- *
- * Muss als ERSTE JS-Datei geladen werden, da alle anderen
- * Module auf Game und gameState zugreifen.
- */
-
 'use strict';
 
 /* ==========================================================================
-   KONFIGURATION – Alle Spielkonstanten hier anpassen
+   CONFIG
    ========================================================================== */
 const CONFIG = {
-  /** Tick-Rate in Millisekunden (100ms = 10 Ticks/Sekunde) */
-  TICK_INTERVAL_MS: 100,
-
-  /** Auto-Save alle X Millisekunden */
-  AUTO_SAVE_INTERVAL_MS: 30_000,
-
-  /** Maximale Offline-Zeit die angerechnet wird (8 Stunden in Sekunden) */
-  MAX_OFFLINE_SECONDS: 8 * 60 * 60,
-
-  /** Gebäude-Preis steigt pro Kauf um diesen Faktor (Cookie Clicker: 1.15) */
-  BUILDING_PRICE_SCALE: 1.15,
-
-  /** Basiswert für Kuchen pro Klick */
+  TICK_INTERVAL_MS:       100,
+  AUTO_SAVE_INTERVAL_MS:  30_000,
+  MAX_OFFLINE_SECONDS:    8 * 60 * 60,
+  BUILDING_PRICE_SCALE:   1.15,
   BASE_COOKIES_PER_CLICK: 1,
-
-  /** LocalStorage-Schlüssel */
-  SAVE_KEY: 'kuchenClicker_save',
-
-  /** Version des Spielstands (für Migrations-Kompatibilität) */
-  SAVE_VERSION: 2,
-
-  /** Anzahl der Ticks bis Shop-UI neu gerendert wird */
-  SHOP_RENDER_TICKS: 5,
+  SAVE_KEY:               'kuchenClicker_save',
+  SAVE_VERSION:           3,
+  SHOP_RENDER_TICKS:      5,
+  BASE_CRIT_CHANCE:       0.01,
+  CRIT_MULTIPLIER:        7,
+  GOLDEN_CAKE_MIN_INTERVAL: 60,    // seconds
+  GOLDEN_CAKE_MAX_INTERVAL: 300,
+  GOLDEN_CAKE_LIFETIME:     13,    // seconds
+  FRENZY_DURATION:          77,    // seconds
+  CLICK_FRENZY_DURATION:    13,    // seconds
+  PRESTIGE_THRESHOLD:       1e12,  // 1 trillion to prestige
 };
 
 /* ==========================================================================
-   GEBÄUDE-DEFINITIONEN
-   Jedes Gebäude ist ein Objekt mit folgenden Feldern:
-     id          – eindeutiger String-Schlüssel
-     name        – Anzeigename
-     icon        – Emoji für die Anzeige
-     description – kurze Beschreibung (erscheint im Shop)
-     baseCps     – Kuchen pro Sekunde pro Gebäude (Basis)
-     basePrice   – Startpreis (steigt mit jeder Kauf-Instanz)
+   BUILDINGS
    ========================================================================== */
 const BUILDINGS = [
   {
-    id:          'hausbackofen',
-    name:        'Hausbackofen',
-    icon:        '🔥',
+    id: 'hausbackofen', name: 'Hausbackofen', icon: '🔥',
     description: 'Ein alter, zuverlässiger Ofen. Backt gemütlich vor sich hin.',
-    baseCps:     0.1,
-    basePrice:   15,
+    baseCps: 0.1, basePrice: 15,
   },
   {
-    id:          'kleine_baeckerei',
-    name:        'Kleine Bäckerei',
-    icon:        '🏠',
+    id: 'kleine_baeckerei', name: 'Kleine Bäckerei', icon: '🏠',
     description: 'Eine gemütliche Backstube in der Nachbarschaft.',
-    baseCps:     0.5,
-    basePrice:   100,
+    baseCps: 0.5, basePrice: 100,
   },
   {
-    id:          'konditorei',
-    name:        'Konditorei',
-    icon:        '🎂',
+    id: 'konditorei', name: 'Konditorei', icon: '🎂',
     description: 'Spezialisiert auf feine Torten und Kunstwerke aus Teig.',
-    baseCps:     4,
-    basePrice:   500,
+    baseCps: 4, basePrice: 500,
   },
   {
-    id:          'kuchenfabrik',
-    name:        'Kuchenfabrik',
-    icon:        '🏭',
+    id: 'kuchenfabrik', name: 'Kuchenfabrik', icon: '🏭',
     description: 'Automatisierte Produktion – Kuchen am laufenden Band!',
-    baseCps:     20,
-    basePrice:   3_000,
+    baseCps: 20, basePrice: 3_000,
   },
   {
-    id:          'magische_kuchenmaschine',
-    name:        'Magische Kuchenmaschine',
-    icon:        '✨',
+    id: 'magische_kuchenmaschine', name: 'Magische Kuchenmaschine', icon: '✨',
     description: 'Von Zauberlehrlingen konstruiert. Backkunst trifft Magie.',
-    baseCps:     100,
-    basePrice:   20_000,
+    baseCps: 100, basePrice: 20_000,
   },
   {
-    id:          'kuchenportal',
-    name:        'Kuchenportal',
-    icon:        '🌀',
+    id: 'kuchenportal', name: 'Kuchenportal', icon: '🌀',
     description: 'Liefert Kuchen aus anderen Dimensionen. Quantengebäck.',
-    baseCps:     400,
-    basePrice:   100_000,
+    baseCps: 400, basePrice: 100_000,
   },
   {
-    id:          'zeitbaeckerei',
-    name:        'Zeitbäckerei',
-    icon:        '⏳',
-    description: 'Backt Kuchen aus der Vergangenheit und der Zukunft gleichzeitig.',
-    baseCps:     1_600,
-    basePrice:   500_000,
+    id: 'zeitbaeckerei', name: 'Zeitbäckerei', icon: '⏳',
+    description: 'Backt Kuchen aus Vergangenheit und Zukunft gleichzeitig.',
+    baseCps: 1_600, basePrice: 500_000,
+  },
+  {
+    id: 'kuchenplanet', name: 'Kuchenplanet', icon: '🌍',
+    description: 'Ein ganzer Planet aus reinem Kuchenteig. Planetare Backkapazität.',
+    baseCps: 8_000, basePrice: 5_000_000,
+  },
+  {
+    id: 'kuchengalaxie', name: 'Kuchengalaxie', icon: '🌌',
+    description: 'Millionen Kuchensterne erzeugen endlose Kuchenenergie.',
+    baseCps: 40_000, basePrice: 50_000_000,
+  },
+  {
+    id: 'kuchenuniversum', name: 'Kuchenuniversum', icon: '🔭',
+    description: 'Das gesamte Universum besteht aus Kuchen. Du hast es erschaffen.',
+    baseCps: 200_000, basePrice: 500_000_000,
+  },
+  {
+    id: 'goettliche_baeckerei', name: 'Göttliche Bäckerei', icon: '⚡',
+    description: 'Götter selbst kneten hier den heiligen Teig der Schöpfung.',
+    baseCps: 1_000_000, basePrice: 10_000_000_000,
+  },
+  {
+    id: 'unsterbliche_kuchenquelle', name: 'Unsterbliche Kuchenquelle', icon: '♾️',
+    description: 'Die Urquelle aller Kuchen. Jenseits von Zeit und Raum.',
+    baseCps: 10_000_000, basePrice: 500_000_000_000,
   },
 ];
 
 /* ==========================================================================
-   ACHIEVEMENTS-DEFINITIONEN
-   Jedes Achievement hat:
-     id          – eindeutiger Schlüssel
-     name        – Anzeigename
-     description – was wurde erreicht
-     icon        – Emoji
-     condition   – Funktion(state) → boolean: Wird bei jedem Tick geprüft
+   ACHIEVEMENTS
    ========================================================================== */
 const ACHIEVEMENTS = [
-  {
-    id:          'erster_bissen',
-    name:        'Erster Bissen',
-    description: 'Klicke zum ersten Mal auf den Kuchen.',
-    icon:        '👆',
-    condition:   (s) => s.totalClicks >= 1,
-  },
-  {
-    id:          'fleissiger_baecker',
-    name:        'Fleißiger Bäcker',
-    description: 'Klicke 100-mal auf den Kuchen.',
-    icon:        '💪',
-    condition:   (s) => s.totalClicks >= 100,
-  },
-  {
-    id:          'klick_profi',
-    name:        'Klick-Profi',
-    description: 'Klicke 1.000-mal auf den Kuchen.',
-    icon:        '🖱️',
-    condition:   (s) => s.totalClicks >= 1_000,
-  },
-  {
-    id:          'erstes_gebaeude',
-    name:        'Erstes Gebäude',
-    description: 'Kaufe dein erstes Gebäude.',
-    icon:        '🏗️',
-    condition:   (s) => Object.values(s.buildings).some(b => b.count >= 1),
-  },
-  {
-    id:          'kleine_baeckerei_besitzer',
-    name:        'Bäckerei-Besitzer',
-    description: 'Besitze insgesamt 5 Gebäude.',
-    icon:        '🏠',
-    condition:   (s) => Object.values(s.buildings).reduce((sum, b) => sum + b.count, 0) >= 5,
-  },
-  {
-    id:          'grossbetrieb',
-    name:        'Großbetrieb',
-    description: 'Besitze insgesamt 25 Gebäude.',
-    icon:        '🏙️',
-    condition:   (s) => Object.values(s.buildings).reduce((sum, b) => sum + b.count, 0) >= 25,
-  },
-  {
-    id:          'tausend_kuchen',
-    name:        '1.000 Kuchen',
-    description: 'Backe insgesamt 1.000 Kuchen.',
-    icon:        '🍰',
-    condition:   (s) => s.totalCookies >= 1_000,
-  },
-  {
-    id:          'zehntausend_kuchen',
-    name:        '10.000 Kuchen',
-    description: 'Backe insgesamt 10.000 Kuchen.',
-    icon:        '🎂',
-    condition:   (s) => s.totalCookies >= 10_000,
-  },
-  {
-    id:          'million_kuchen',
-    name:        'Kuchenmillionär',
-    description: 'Backe insgesamt 1.000.000 Kuchen.',
-    icon:        '💰',
-    condition:   (s) => s.totalCookies >= 1_000_000,
-  },
-  {
-    id:          'milliarde_kuchen',
-    name:        'Kuchenmilliardär',
-    description: 'Backe insgesamt 1.000.000.000 Kuchen.',
-    icon:        '👑',
-    condition:   (s) => s.totalCookies >= 1_000_000_000,
-  },
-  {
-    id:          'erster_upgrade',
-    name:        'Upgrade-Enthusiast',
-    description: 'Kaufe dein erstes Upgrade.',
-    icon:        '⬆️',
-    condition:   (s) => Object.values(s.upgrades).filter(Boolean).length >= 1,
-  },
-  {
-    id:          'upgrade_sammler',
-    name:        'Upgrade-Sammler',
-    description: 'Kaufe 5 verschiedene Upgrades.',
-    icon:        '🌟',
-    condition:   (s) => Object.values(s.upgrades).filter(Boolean).length >= 5,
-  },
-  {
-    id:          'zehn_cps',
-    name:        'Fleißige Produktion',
-    description: 'Erreiche 10 Kuchen pro Sekunde.',
-    icon:        '⚡',
-    condition:   (s) => s.cookiesPerSecond >= 10,
-  },
-  {
-    id:          'hundert_cps',
-    name:        'Kuchenmaschinerie',
-    description: 'Erreiche 100 Kuchen pro Sekunde.',
-    icon:        '🚀',
-    condition:   (s) => s.cookiesPerSecond >= 100,
-  },
-  {
-    id:          'konditorei_besitzer',
-    name:        'Konditor-Meister',
-    description: 'Besitze eine Konditorei.',
-    icon:        '🎓',
-    condition:   (s) => s.buildings['konditorei']?.count >= 1,
-  },
+  // Click milestones
+  { id: 'erster_bissen',     name: 'Erster Bissen',      description: 'Klicke zum ersten Mal.',            icon: '👆', condition: s => s.totalClicks >= 1 },
+  { id: 'fleissig',          name: 'Fleißiger Bäcker',   description: '100 Klicks.',                        icon: '💪', condition: s => s.totalClicks >= 100 },
+  { id: 'klick_profi',       name: 'Klick-Profi',        description: '1.000 Klicks.',                      icon: '🖱️', condition: s => s.totalClicks >= 1_000 },
+  { id: 'klick_wahnsinn',    name: 'Klick-Wahnsinn',     description: '10.000 Klicks.',                     icon: '⚡', condition: s => s.totalClicks >= 10_000 },
+  { id: 'klick_gott',        name: 'Klick-Gott',         description: '100.000 Klicks.',                    icon: '🌩️', condition: s => s.totalClicks >= 100_000 },
+
+  // Cookie production
+  { id: 'tausend',           name: '1.000 Kuchen',       description: '1.000 Kuchen gebacken.',             icon: '🍰', condition: s => s.totalCookies >= 1_000 },
+  { id: 'zehntausend',       name: '10.000 Kuchen',      description: '10.000 Kuchen gebacken.',            icon: '🎂', condition: s => s.totalCookies >= 10_000 },
+  { id: 'million',           name: 'Millionär',          description: '1 Million Kuchen gebacken.',         icon: '💰', condition: s => s.totalCookies >= 1_000_000 },
+  { id: 'milliarde',         name: 'Milliardär',         description: '1 Milliarde Kuchen gebacken.',       icon: '👑', condition: s => s.totalCookies >= 1_000_000_000 },
+  { id: 'billion',           name: 'Billionär',          description: '1 Billion Kuchen gebacken.',         icon: '🚀', condition: s => s.totalCookies >= 1_000_000_000_000 },
+  { id: 'quadrillion',       name: 'Kuchenimperator',   description: '1 Billiarde Kuchen gebacken.',       icon: '🌌', condition: s => s.totalCookies >= 1_000_000_000_000_000 },
+
+  // Buildings
+  { id: 'erstes_gebaeude',   name: 'Erstes Gebäude',     description: 'Kaufe dein erstes Gebäude.',         icon: '🏗️', condition: s => Object.values(s.buildings).some(b => b.count >= 1) },
+  { id: 'fuenf_gebaeude',    name: 'Bäckereibesitzer',   description: 'Besitze 5 Gebäude.',                 icon: '🏠', condition: s => Object.values(s.buildings).reduce((n, b) => n + b.count, 0) >= 5 },
+  { id: 'zwanzig_gebaeude',  name: 'Industriebäcker',    description: 'Besitze 20 Gebäude.',                icon: '🏙️', condition: s => Object.values(s.buildings).reduce((n, b) => n + b.count, 0) >= 20 },
+  { id: 'fuenfzig_gebaeude', name: 'Kuchenkonzern',      description: 'Besitze 50 Gebäude.',                icon: '🌆', condition: s => Object.values(s.buildings).reduce((n, b) => n + b.count, 0) >= 50 },
+  { id: 'hundert_gebaeude',  name: 'Kuchenimperium',     description: 'Besitze 100 Gebäude.',               icon: '🏰', condition: s => Object.values(s.buildings).reduce((n, b) => n + b.count, 0) >= 100 },
+
+  // CPS thresholds
+  { id: 'zehn_cps',          name: 'Fleißig',            description: '10 Kuchen/s erreicht.',              icon: '🔥', condition: s => s.cookiesPerSecond >= 10 },
+  { id: 'hundert_cps',       name: 'Kuchenmaschinerie',  description: '100 Kuchen/s erreicht.',             icon: '⚙️', condition: s => s.cookiesPerSecond >= 100 },
+  { id: 'tausend_cps',       name: 'Kuchenstrom',        description: '1.000 Kuchen/s erreicht.',           icon: '⚡', condition: s => s.cookiesPerSecond >= 1_000 },
+  { id: 'million_cps',       name: 'Kuchenflut',         description: '1 Million Kuchen/s erreicht.',       icon: '🌊', condition: s => s.cookiesPerSecond >= 1_000_000 },
+  { id: 'milliarde_cps',     name: 'Göttliche Rate',     description: '1 Milliarde Kuchen/s erreicht.',     icon: '🌟', condition: s => s.cookiesPerSecond >= 1_000_000_000 },
+
+  // Upgrades
+  { id: 'erstes_upgrade',    name: 'Upgrade-Fan',        description: 'Kaufe dein erstes Upgrade.',         icon: '⬆️', condition: s => Object.values(s.upgrades).filter(Boolean).length >= 1 },
+  { id: 'zehn_upgrades',     name: 'Upgrade-Sammler',    description: '10 Upgrades gekauft.',               icon: '🌟', condition: s => Object.values(s.upgrades).filter(Boolean).length >= 10 },
+  { id: 'zwanzig_upgrades',  name: 'Upgrade-Meister',    description: '20 Upgrades gekauft.',               icon: '💎', condition: s => Object.values(s.upgrades).filter(Boolean).length >= 20 },
+
+  // Golden cakes
+  { id: 'goldener_kuchen',   name: 'Goldener Treffer',   description: 'Klicke deinen ersten goldenen Kuchen.', icon: '✨', condition: s => s.goldenCakesClicked >= 1 },
+  { id: 'goldener_profi',    name: 'Goldenjäger',        description: '10 goldene Kuchen geklickt.',        icon: '🌟', condition: s => s.goldenCakesClicked >= 10 },
+  { id: 'goldener_gott',     name: 'Goldener Gott',      description: '50 goldene Kuchen geklickt.',        icon: '🏆', condition: s => s.goldenCakesClicked >= 50 },
+
+  // Crits
+  { id: 'erster_crit',       name: 'Kritischer Treffer', description: 'Erziele deinen ersten Kritischen Treffer.', icon: '💥', condition: s => s.totalCriticalClicks >= 1 },
+  { id: 'crit_profi',        name: 'Kritisch-Meister',   description: '100 kritische Treffer erzielt.',    icon: '🎯', condition: s => s.totalCriticalClicks >= 100 },
+
+  // Buildings specific
+  { id: 'konditorei_besitzer', name: 'Konditor-Meister', description: 'Besitze eine Konditorei.',          icon: '🎓', condition: s => (s.buildings['konditorei']?.count ?? 0) >= 1 },
+  { id: 'planet_besitzer',   name: 'Planetenbackgott',   description: 'Besitze einen Kuchenplaneten.',     icon: '🌍', condition: s => (s.buildings['kuchenplanet']?.count ?? 0) >= 1 },
+  { id: 'universum_besitzer',name: 'Schöpfer',           description: 'Besitze ein Kuchenuniversum.',      icon: '🔭', condition: s => (s.buildings['kuchenuniversum']?.count ?? 0) >= 1 },
+
+  // Prestige
+  { id: 'erster_aufstieg',   name: 'Aufsteiger',         description: 'Steige zum ersten Mal auf.',        icon: '👑', condition: s => s.prestigeCount >= 1 },
+  { id: 'dritter_aufstieg',  name: 'Legionär',           description: 'Steige dreimal auf.',               icon: '🌠', condition: s => s.prestigeCount >= 3 },
 ];
 
 /* ==========================================================================
-   MILESTONES – Ziele die nacheinander angezeigt werden
+   MILESTONES
    ========================================================================== */
 const MILESTONES = [
-  { label: 'Erste 10 Kuchen backen!',       target: 10 },
-  { label: 'Erste 100 Kuchen backen!',      target: 100 },
-  { label: '1.000 Kuchen backen!',          target: 1_000 },
-  { label: '10.000 Kuchen backen!',         target: 10_000 },
-  { label: '100.000 Kuchen backen!',        target: 100_000 },
-  { label: '1 Million Kuchen backen!',      target: 1_000_000 },
-  { label: '1 Milliarde Kuchen backen!',    target: 1_000_000_000 },
-  { label: '1 Billion Kuchen backen!',      target: 1_000_000_000_000 },
+  { label: 'Erste 10 Kuchen!',              target: 10 },
+  { label: 'Erste 100 Kuchen!',             target: 100 },
+  { label: '1.000 Kuchen!',                 target: 1_000 },
+  { label: '10.000 Kuchen!',                target: 10_000 },
+  { label: '100.000 Kuchen!',               target: 100_000 },
+  { label: '1 Million Kuchen!',             target: 1_000_000 },
+  { label: '1 Milliarde Kuchen!',           target: 1_000_000_000 },
+  { label: '1 Billion Kuchen!',             target: 1_000_000_000_000 },
+  { label: '1 Billiarde Kuchen!',           target: 1_000_000_000_000_000 },
+  { label: '1 Trillion Kuchen – Prestige!', target: 1_000_000_000_000_000_000 },
 ];
 
 /* ==========================================================================
-   ZENTRALES SPIELZUSTANDS-OBJEKT
-   Alle veränderlichen Spieldaten befinden sich hier.
-   Dieses Objekt wird in localStorage gespeichert/geladen.
+   GAME STATE
    ========================================================================== */
 let gameState = {
-  /** Aktuell verfügbare Kuchen */
-  cookies:            0,
+  cookies:           0,
+  totalCookies:      0,
+  totalClicks:       0,
+  cookiesPerSecond:  0,
+  cookiesPerClick:   CONFIG.BASE_COOKIES_PER_CLICK,
+  clickMultiplier:   1,
+  buildings:         {},
+  upgrades:          {},
+  achievements:      {},
+  lastSaveTime:      Date.now(),
+  lastTickTime:      Date.now(),
 
-  /** Gesamt jemals produzierte Kuchen (für Achievements) */
-  totalCookies:       0,
+  // New fields
+  goldenCakesClicked:   0,
+  totalCriticalClicks:  0,
+  critChance:           CONFIG.BASE_CRIT_CHANCE,
 
-  /** Gesamte Klicks aller Zeiten */
-  totalClicks:        0,
+  // Prestige
+  prestigeCount:            0,
+  heavenlyChips:            0,
+  heavenlyChipsMultiplier:  1,
 
-  /** Berechnete Kuchen pro Sekunde (wird beim Tick neu berechnet) */
-  cookiesPerSecond:   0,
-
-  /** Berechnete Kuchen pro Klick (Basiswert * Multiplikator) */
-  cookiesPerClick:    CONFIG.BASE_COOKIES_PER_CLICK,
-
-  /** Multiplikator für Klick-Kuchen (durch Upgrades veränderbar) */
-  clickMultiplier:    1,
-
-  /**
-   * Gebäude-Zustände: { [buildingId]: { count, totalCps, multiplier } }
-   * Wird beim Start aus BUILDINGS initialisiert.
-   */
-  buildings:          {},
-
-  /**
-   * Upgrade-Status: { [upgradeId]: boolean }
-   * true = gekauft, false/undefined = nicht gekauft
-   */
-  upgrades:           {},
-
-  /**
-   * Achievement-Status: { [achievementId]: boolean }
-   */
-  achievements:       {},
-
-  /** Unix-Timestamp des letzten Speicherns */
-  lastSaveTime:       Date.now(),
-
-  /** Unix-Timestamp des letzten Ticks (für Offline-Berechnung) */
-  lastTickTime:       Date.now(),
+  // Transient (not saved)
+  frenzyActive:       false,
+  frenzyEndTime:      0,
+  frenzyMultiplier:   1,
+  clickFrenzyActive:  false,
+  clickFrenzyEndTime: 0,
 };
 
 /* ==========================================================================
-   GAME-MODUL – Kern-Spiellogik
+   GOLDEN CAKE BONUSES
+   ========================================================================== */
+const GOLDEN_BONUSES = [
+  {
+    type: 'lucky',
+    name: '🍀 Glückskuchen!',
+    desc: '+ 15 Minuten Produktion',
+    apply() {
+      const bonus = Math.floor(gameState.cookiesPerSecond * 60 * 15);
+      gameState.cookies      += bonus;
+      gameState.totalCookies += bonus;
+      return bonus;
+    },
+  },
+  {
+    type: 'frenzy',
+    name: '🔥 FRENZY!',
+    desc: 'x7 Produktion für 77 Sekunden',
+    apply() {
+      gameState.frenzyActive     = true;
+      gameState.frenzyMultiplier = 7;
+      gameState.frenzyEndTime    = Date.now() + CONFIG.FRENZY_DURATION * 1000;
+      UI.startFrenzyBar(CONFIG.FRENZY_DURATION);
+      UI.showFrenzyNotification('🔥 FRENZY! x7 Produktion!');
+      return 0;
+    },
+  },
+  {
+    type: 'click_frenzy',
+    name: '⚡ KLICK-RAUSCH!',
+    desc: 'x777 Klick-Kraft für 13 Sekunden',
+    apply() {
+      gameState.clickFrenzyActive  = true;
+      gameState.clickFrenzyEndTime = Date.now() + CONFIG.CLICK_FRENZY_DURATION * 1000;
+      UI.showFrenzyNotification('⚡ KLICK-RAUSCH! x777!');
+      document.getElementById('panel-center')?.classList.add('panel--click-frenzy');
+      setTimeout(() => {
+        document.getElementById('panel-center')?.classList.remove('panel--click-frenzy');
+      }, CONFIG.CLICK_FRENZY_DURATION * 1000);
+      return 0;
+    },
+  },
+  {
+    type: 'cookie_storm',
+    name: '🌧️ Kuchen-Sturm!',
+    desc: '+ 5 Minuten Produktion und Partikel-Regen',
+    apply() {
+      const bonus = Math.floor(gameState.cookiesPerSecond * 60 * 5);
+      gameState.cookies      += bonus;
+      gameState.totalCookies += bonus;
+      UI.triggerCookieStorm();
+      return bonus;
+    },
+  },
+];
+
+/* ==========================================================================
+   GAME MODULE
    ========================================================================== */
 const Game = (() => {
 
-  /** Interne Tick-Counter */
   let _tickCount = 0;
+  let _lastClickTime = 0;
+  let _combo = 1;
+  let _comboResetTimer = null;
 
   // ------------------------------------------------------------------
-  //  Initialisierung
+  //  Init
   // ------------------------------------------------------------------
-
-  /**
-   * Initialisiert das Spiel:
-   * 1. Gebäude-Zustände aus BUILDINGS-Definitionen aufbauen
-   * 2. Spielstand aus localStorage laden
-   * 3. Offline-Progress berechnen
-   * 4. Tick-Loop starten
-   * 5. UI erstmalig rendern
-   */
   function init() {
     _initBuildingStates();
     _initUpgradeStates();
     _initAchievementStates();
 
-    // Spielstand laden (überschreibt die Default-Werte)
     Save.load();
 
-    // Offline-Progress berechnen und anzeigen
-    const offlineCookies = Save.calculateOfflineProgress();
-    if (offlineCookies > 0) {
-      gameState.cookies      += offlineCookies;
-      gameState.totalCookies += offlineCookies;
-      UI.showOfflineBanner(offlineCookies);
+    const offline = Save.calculateOfflineProgress();
+    if (offline > 0) {
+      gameState.cookies      += offline;
+      gameState.totalCookies += offline;
+      UI.showOfflineBanner(offline);
     }
 
-    // Abgeleitete Werte neu berechnen
     _recalculate();
-
-    // UI initialisieren
     UI.init();
     Shop.render();
 
-    // Tick-Loop starten
     setInterval(_tick, CONFIG.TICK_INTERVAL_MS);
+    setInterval(() => { Save.save(); UI.showSaveFeedback(); }, CONFIG.AUTO_SAVE_INTERVAL_MS);
 
-    // Auto-Save starten
-    setInterval(() => {
-      Save.save();
-      UI.showSaveFeedback();
-    }, CONFIG.AUTO_SAVE_INTERVAL_MS);
+    // Start golden cake spawner
+    _scheduleNextGoldenCake();
 
-    console.log('🍰 Kuchen Clicker gestartet!');
+    console.log('🍰 Kuchen Clicker ULTRA gestartet!');
   }
 
-  /**
-   * Initialisiert den buildings-Bereich des gameState
-   * aus den BUILDINGS-Definitionen.
-   * Wird beim ersten Start aufgerufen, bestehende Werte
-   * werden beim Laden überschrieben.
-   */
   function _initBuildingStates() {
     BUILDINGS.forEach(b => {
       if (!gameState.buildings[b.id]) {
-        gameState.buildings[b.id] = {
-          count:      0,       // Anzahl gekaufter Gebäude
-          multiplier: 1,       // Multiplikator (durch Upgrades)
-        };
+        gameState.buildings[b.id] = { count: 0, multiplier: 1 };
       }
     });
   }
 
-  /**
-   * Initialisiert den upgrades-Bereich des gameState
-   * aus den UPGRADES-Definitionen (in upgrades.js).
-   */
   function _initUpgradeStates() {
     if (typeof UPGRADES !== 'undefined') {
       UPGRADES.forEach(u => {
@@ -377,9 +310,6 @@ const Game = (() => {
     }
   }
 
-  /**
-   * Initialisiert den achievements-Bereich des gameState.
-   */
   function _initAchievementStates() {
     ACHIEVEMENTS.forEach(a => {
       if (gameState.achievements[a.id] === undefined) {
@@ -389,126 +319,168 @@ const Game = (() => {
   }
 
   // ------------------------------------------------------------------
-  //  Tick-System
+  //  Tick
   // ------------------------------------------------------------------
-
-  /**
-   * Wird CONFIG.TICK_INTERVAL_MS-mal pro Sekunde aufgerufen.
-   * Berechnet passives Einkommen und aktualisiert die UI.
-   */
   function _tick() {
     _tickCount++;
+    const now = Date.now();
+    const dt  = CONFIG.TICK_INTERVAL_MS / 1000;
 
-    const deltaSeconds = CONFIG.TICK_INTERVAL_MS / 1000;
-
-    // Passives Einkommen berechnen und hinzufügen
-    const passiveGain = gameState.cookiesPerSecond * deltaSeconds;
-    if (passiveGain > 0) {
-      gameState.cookies      += passiveGain;
-      gameState.totalCookies += passiveGain;
+    // Check frenzy expiry
+    if (gameState.frenzyActive && now > gameState.frenzyEndTime) {
+      gameState.frenzyActive    = false;
+      gameState.frenzyMultiplier = 1;
+      document.getElementById('panel-center')?.classList.remove('panel--frenzy');
+      UI.stopFrenzyBar();
+    }
+    if (gameState.clickFrenzyActive && now > gameState.clickFrenzyEndTime) {
+      gameState.clickFrenzyActive = false;
     }
 
-    // Letzten Tick-Zeitstempel aktualisieren (für Offline-Progress)
-    gameState.lastTickTime = Date.now();
+    // Update frenzy bar
+    if (gameState.frenzyActive) {
+      const remaining = (gameState.frenzyEndTime - now) / 1000;
+      UI.updateFrenzyBar(remaining, CONFIG.FRENZY_DURATION);
+    }
 
-    // Achievements prüfen
+    // Passive income (with frenzy multiplier)
+    const frenzyMult = gameState.frenzyActive ? gameState.frenzyMultiplier : 1;
+    const gain = gameState.cookiesPerSecond * dt * frenzyMult;
+    if (gain > 0) {
+      gameState.cookies      += gain;
+      gameState.totalCookies += gain;
+    }
+
+    gameState.lastTickTime = now;
+
     _checkAchievements();
-
-    // UI aktualisieren (Hauptzähler immer)
     UI.updateStats();
 
-    // Shop-UI nur alle paar Ticks rendern (Performance)
     if (_tickCount % CONFIG.SHOP_RENDER_TICKS === 0) {
       Shop.updateAffordability();
       UI.updateOwnedBuildings();
       UI.updateMilestone();
+      UI.updatePrestigeSection();
     }
   }
 
   // ------------------------------------------------------------------
-  //  Kern-Berechnungen
+  //  Recalculate
   // ------------------------------------------------------------------
-
-  /**
-   * Berechnet alle abgeleiteten Werte neu:
-   *  - cookiesPerSecond (aus Gebäuden + Multiplikatoren)
-   *  - cookiesPerClick  (Basis * Multiplikator)
-   * Muss aufgerufen werden wenn Gebäude/Upgrades geändert werden.
-   */
   function _recalculate() {
     let totalCps = 0;
-
-    // Für jedes Gebäude: Basis-CPS * Anzahl * Gebäude-Multiplikator
-    BUILDINGS.forEach(buildingDef => {
-      const state = gameState.buildings[buildingDef.id];
+    BUILDINGS.forEach(def => {
+      const state = gameState.buildings[def.id];
       if (!state) return;
-      const cps = buildingDef.baseCps * state.count * state.multiplier;
-      totalCps += cps;
+      totalCps += def.baseCps * state.count * state.multiplier;
     });
 
+    // Apply heavenly chips multiplier
+    totalCps *= gameState.heavenlyChipsMultiplier;
+
     gameState.cookiesPerSecond = totalCps;
-    gameState.cookiesPerClick  = Math.max(
-      1,
-      CONFIG.BASE_COOKIES_PER_CLICK * gameState.clickMultiplier
-    );
+    gameState.cookiesPerClick  = Math.max(1, CONFIG.BASE_COOKIES_PER_CLICK * gameState.clickMultiplier);
   }
 
-  /**
-   * Prüft alle Achievements und schaltet sie frei falls Bedingung erfüllt.
-   */
+  // ------------------------------------------------------------------
+  //  Achievements
+  // ------------------------------------------------------------------
   function _checkAchievements() {
-    ACHIEVEMENTS.forEach(achievement => {
-      // Bereits freigeschaltet → überspringen
-      if (gameState.achievements[achievement.id]) return;
-
-      // Bedingung prüfen
-      if (achievement.condition(gameState)) {
-        gameState.achievements[achievement.id] = true;
-        UI.showAchievementToast(achievement);
+    ACHIEVEMENTS.forEach(a => {
+      if (gameState.achievements[a.id]) return;
+      if (a.condition(gameState)) {
+        gameState.achievements[a.id] = true;
+        UI.showAchievementToast(a);
         UI.updateAchievements();
       }
     });
   }
 
   // ------------------------------------------------------------------
-  //  Klick-Handler
+  //  Cake Click
   // ------------------------------------------------------------------
-
-  /**
-   * Wird aufgerufen wenn der Spieler auf den Kuchen klickt.
-   * Fügt cookiesPerClick Kuchen hinzu und triggert Animationen.
-   */
   function handleCakeClick(event) {
-    const gained = gameState.cookiesPerClick;
+    const now = Date.now();
+
+    // Combo system
+    if (now - _lastClickTime < 350) {
+      _combo = Math.min(_combo + 1, 100);
+    } else {
+      _combo = 1;
+    }
+    _lastClickTime = now;
+    clearTimeout(_comboResetTimer);
+    _comboResetTimer = setTimeout(() => {
+      _combo = 1;
+      UI.updateComboDisplay(1, 1, false);
+    }, 2000);
+
+    const comboMult = _getComboMultiplier(_combo);
+
+    // Critical hit
+    const isCrit = Math.random() < gameState.critChance;
+    const critMult = isCrit ? CONFIG.CRIT_MULTIPLIER : 1;
+
+    // Click frenzy
+    const clickFrenzyMult = gameState.clickFrenzyActive ? 777 : 1;
+
+    let gained = gameState.cookiesPerClick * comboMult * critMult * clickFrenzyMult;
+    // Also scale by heavenly chips
+    gained *= gameState.heavenlyChipsMultiplier;
 
     gameState.cookies      += gained;
     gameState.totalCookies += gained;
     gameState.totalClicks  += 1;
 
-    // Float-Zahl Animation starten
-    UI.spawnFloatNumber(gained, event);
+    if (isCrit) {
+      gameState.totalCriticalClicks += 1;
+      UI.triggerCritEffect(gained, event);
+    } else {
+      UI.spawnFloatNumber(gained, event, isCrit);
+    }
 
-    // Partikel-Effekt
-    UI.spawnParticles(event);
+    UI.spawnParticles(event, isCrit);
+    UI.triggerCakeAnimation(isCrit);
+    UI.updateComboDisplay(_combo, comboMult, _combo >= 5);
+    UI.updateStats();
+  }
 
-    // Kuchen-Wackel-Animation
-    UI.triggerCakeAnimation();
+  function _getComboMultiplier(combo) {
+    if (combo >= 100) return 5;
+    if (combo >= 50)  return 3;
+    if (combo >= 20)  return 2;
+    if (combo >= 10)  return 1.5;
+    if (combo >= 5)   return 1.2;
+    return 1;
+  }
 
-    // Stats sofort aktualisieren (nicht auf nächsten Tick warten)
+  // ------------------------------------------------------------------
+  //  Golden Cake
+  // ------------------------------------------------------------------
+  function _scheduleNextGoldenCake() {
+    const delay = (CONFIG.GOLDEN_CAKE_MIN_INTERVAL +
+      Math.random() * (CONFIG.GOLDEN_CAKE_MAX_INTERVAL - CONFIG.GOLDEN_CAKE_MIN_INTERVAL)) * 1000;
+    setTimeout(() => {
+      UI.spawnGoldenCake();
+      _scheduleNextGoldenCake();
+    }, delay);
+  }
+
+  function handleGoldenCakeClick() {
+    gameState.goldenCakesClicked += 1;
+    const bonus = GOLDEN_BONUSES[Math.floor(Math.random() * GOLDEN_BONUSES.length)];
+    const amount = bonus.apply();
+    UI.showGoldenBonus(bonus.name, bonus.desc, amount);
+    if (bonus.type === 'frenzy') {
+      document.getElementById('panel-center')?.classList.add('panel--frenzy');
+    }
+    _recalculate();
     UI.updateStats();
   }
 
   // ------------------------------------------------------------------
-  //  Gebäude-Kauf
+  //  Buildings
   // ------------------------------------------------------------------
-
-  /**
-   * Berechnet den aktuellen Preis für ein Gebäude basierend auf
-   * der bereits gekauften Anzahl.
-   * Formel: basePrice * scaleFactor ^ count
-   * @param {string} buildingId – ID des Gebäudes
-   * @returns {number} aktueller Preis (gerundet)
-   */
   function getBuildingPrice(buildingId) {
     const def   = BUILDINGS.find(b => b.id === buildingId);
     const state = gameState.buildings[buildingId];
@@ -516,118 +488,124 @@ const Game = (() => {
     return Math.floor(def.basePrice * Math.pow(CONFIG.BUILDING_PRICE_SCALE, state.count));
   }
 
-  /**
-   * Kauft ein Gebäude wenn genug Kuchen vorhanden sind.
-   * @param {string} buildingId – ID des Gebäudes
-   * @returns {boolean} true wenn Kauf erfolgreich
-   */
   function buyBuilding(buildingId) {
     const price = getBuildingPrice(buildingId);
     if (gameState.cookies < price) return false;
 
-    gameState.cookies                       -= price;
-    gameState.buildings[buildingId].count   += 1;
-
-    // Abgeleitete Werte neu berechnen
+    gameState.cookies -= price;
+    gameState.buildings[buildingId].count += 1;
     _recalculate();
-
-    // UI sofort aktualisieren
     UI.updateStats();
     Shop.render();
     UI.updateOwnedBuildings();
-
+    UI.playSound('buy');
     return true;
   }
 
   // ------------------------------------------------------------------
-  //  Upgrade-Kauf
+  //  Upgrades
   // ------------------------------------------------------------------
-
-  /**
-   * Kauft ein Upgrade wenn Bedingungen erfüllt und genug Kuchen vorhanden.
-   * Wendet den Effekt sofort an.
-   * @param {string} upgradeId – ID des Upgrades
-   * @returns {boolean} true wenn Kauf erfolgreich
-   */
   function buyUpgrade(upgradeId) {
     const upgrade = UPGRADES.find(u => u.id === upgradeId);
-    if (!upgrade) return false;
-
-    // Bereits gekauft?
-    if (gameState.upgrades[upgradeId]) return false;
-
-    // Genug Kuchen?
+    if (!upgrade || gameState.upgrades[upgradeId]) return false;
     if (gameState.cookies < upgrade.price) return false;
 
-    // Kaufen
-    gameState.cookies          -= upgrade.price;
+    gameState.cookies -= upgrade.price;
     gameState.upgrades[upgradeId] = true;
-
-    // Upgrade-Effekt anwenden
     _applyUpgradeEffect(upgrade);
-
-    // Neu berechnen
     _recalculate();
-
-    // UI aktualisieren
     UI.updateStats();
     Shop.render();
-
+    UI.playSound('upgrade');
     return true;
   }
 
-  /**
-   * Wendet den Effekt eines Upgrades auf den gameState an.
-   * @param {object} upgrade – Upgrade-Objekt aus UPGRADES
-   */
   function _applyUpgradeEffect(upgrade) {
     switch (upgrade.type) {
       case 'click':
-        // Klick-Multiplikator erhöhen
         gameState.clickMultiplier *= upgrade.multiplier;
         break;
-
       case 'building':
-        // Multiplikator eines bestimmten Gebäudes erhöhen
         if (gameState.buildings[upgrade.buildingId]) {
           gameState.buildings[upgrade.buildingId].multiplier *= upgrade.multiplier;
         }
         break;
-
       case 'all_buildings':
-        // Multiplikator ALLER Gebäude erhöhen
         Object.keys(gameState.buildings).forEach(id => {
           gameState.buildings[id].multiplier *= upgrade.multiplier;
         });
         break;
-
+      case 'crit_chance':
+        gameState.critChance = Math.min(gameState.critChance + upgrade.critBonus, 0.25);
+        break;
       default:
         console.warn('Unbekannter Upgrade-Typ:', upgrade.type);
     }
   }
 
   // ------------------------------------------------------------------
-  //  Spielstand zurücksetzen
+  //  Prestige
   // ------------------------------------------------------------------
+  function getPrestigeChips() {
+    return Math.floor(Math.sqrt(gameState.totalCookies / CONFIG.PRESTIGE_THRESHOLD));
+  }
 
-  /**
-   * Setzt den gesamten Spielstand zurück (nach Bestätigung).
-   * Löscht localStorage und lädt die Seite neu.
-   */
+  function canPrestige() {
+    return getPrestigeChips() >= 1;
+  }
+
+  function prestige() {
+    if (!canPrestige()) return;
+
+    const newChips = getPrestigeChips();
+    gameState.heavenlyChips           += newChips;
+    gameState.prestigeCount           += 1;
+    gameState.heavenlyChipsMultiplier  = 1 + (gameState.heavenlyChips * 0.01);
+
+    // Reset run state
+    gameState.cookies        = 0;
+    gameState.totalCookies   = 0;
+    gameState.totalClicks    = 0;
+    gameState.clickMultiplier = 1;
+    gameState.critChance      = CONFIG.BASE_CRIT_CHANCE;
+    gameState.goldenCakesClicked  = 0;
+    gameState.totalCriticalClicks = 0;
+    gameState.frenzyActive    = false;
+    gameState.frenzyMultiplier = 1;
+    gameState.clickFrenzyActive = false;
+
+    BUILDINGS.forEach(b => {
+      gameState.buildings[b.id] = { count: 0, multiplier: 1 };
+    });
+    UPGRADES.forEach(u => { gameState.upgrades[u.id] = false; });
+    ACHIEVEMENTS.forEach(a => { gameState.achievements[a.id] = false; });
+
+    _recalculate();
+    Save.save();
+    window.location.reload();
+  }
+
+  // ------------------------------------------------------------------
+  //  Reset
+  // ------------------------------------------------------------------
   function resetGame() {
     Save.deleteSave();
     window.location.reload();
   }
 
   // ------------------------------------------------------------------
-  //  Öffentliche API
+  //  Public API
   // ------------------------------------------------------------------
   return {
     init,
     handleCakeClick,
+    handleGoldenCakeClick,
     getBuildingPrice,
     buyBuilding,
     buyUpgrade,
+    canPrestige,
+    getPrestigeChips,
+    prestige,
     resetGame,
     recalculate: _recalculate,
   };
@@ -635,66 +613,31 @@ const Game = (() => {
 })();
 
 /* ==========================================================================
-   HILFSFUNKTIONEN (global verfügbar)
+   HELPERS
    ========================================================================== */
-
-/**
- * Formatiert eine Zahl für die Anzeige.
- * Unter 1.000: normale Darstellung (z.B. 42)
- * Ab 1.000: Tausender-Trennzeichen (z.B. 1.234)
- * Ab 1.000.000: Kurzschreibweise (z.B. 1,23 Mio.)
- * @param {number} n – zu formatierende Zahl
- * @param {number} [decimals=1] – Nachkommastellen für Kurzform
- * @returns {string} formatierter String
- */
 function formatNumber(n, decimals = 1) {
   if (typeof n !== 'number' || isNaN(n)) return '0';
-
   n = Math.floor(n);
-
-  if (n < 1_000) {
-    return n.toString();
-  }
-  if (n < 1_000_000) {
-    return n.toLocaleString('de-DE');
-  }
-  if (n < 1_000_000_000) {
-    return (n / 1_000_000).toFixed(decimals) + ' Mio.';
-  }
-  if (n < 1_000_000_000_000) {
-    return (n / 1_000_000_000).toFixed(decimals) + ' Mrd.';
-  }
-  if (n < 1_000_000_000_000_000) {
-    return (n / 1_000_000_000_000).toFixed(decimals) + ' Bio.';
-  }
-  return (n / 1_000_000_000_000_000).toFixed(decimals) + ' Brd.';
+  if (n < 1_000) return n.toString();
+  if (n < 1_000_000) return n.toLocaleString('de-DE');
+  if (n < 1_000_000_000)             return (n / 1_000_000).toFixed(decimals) + ' Mio.';
+  if (n < 1_000_000_000_000)         return (n / 1_000_000_000).toFixed(decimals) + ' Mrd.';
+  if (n < 1_000_000_000_000_000)     return (n / 1_000_000_000_000).toFixed(decimals) + ' Bio.';
+  if (n < 1_000_000_000_000_000_000) return (n / 1_000_000_000_000_000).toFixed(decimals) + ' Brd.';
+  return (n / 1_000_000_000_000_000_000).toFixed(decimals) + ' Tri.';
 }
 
-/**
- * Formatiert Kuchen-pro-Sekunde Wert mit Dezimalstellen.
- * @param {number} n
- * @returns {string}
- */
 function formatCps(n) {
-  if (n < 1)    return n.toFixed(2);
-  if (n < 10)   return n.toFixed(1);
+  if (n < 1)  return n.toFixed(2);
+  if (n < 10) return n.toFixed(1);
   return formatNumber(n, 1);
 }
 
-/**
- * Gibt das aktuelle Milestone-Objekt zurück, also das nächste
- * noch nicht erreichte Ziel.
- * @returns {{ label: string, target: number, progress: number } | null}
- */
 function getCurrentMilestone() {
   for (const m of MILESTONES) {
     if (gameState.totalCookies < m.target) {
-      return {
-        ...m,
-        progress: Math.min(1, gameState.totalCookies / m.target),
-      };
+      return { ...m, progress: Math.min(1, gameState.totalCookies / m.target) };
     }
   }
-  // Alle Milestones erreicht
   return null;
 }
