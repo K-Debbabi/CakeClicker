@@ -1,0 +1,333 @@
+/* ==========================================================================
+   animations.css – Alle CSS-Animationen für Kuchen Clicker
+   Enthält: Kuchen-Wackeln, Float-Zahlen, Achievement-Toast,
+            Shop-Kauf-Pulse, Slide-Ins, Schimmer-Effekte
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. KUCHEN-KLICK-ANIMATION
+   -------------------------------------------------------------------------- */
+
+/* Wackel-Animation beim Klicken auf den Kuchen */
+@keyframes cakeWiggle {
+  0%   { transform: scale(1) rotate(0deg); }
+  15%  { transform: scale(1.12) rotate(-4deg); }
+  30%  { transform: scale(1.08) rotate(3deg); }
+  45%  { transform: scale(1.1) rotate(-2deg); }
+  60%  { transform: scale(1.05) rotate(1deg); }
+  75%  { transform: scale(1.02) rotate(-0.5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+/* Spring-Animation beim Klick */
+@keyframes cakeSpring {
+  0%   { transform: scale(1); }
+  25%  { transform: scale(0.9); }
+  50%  { transform: scale(1.15); }
+  75%  { transform: scale(0.97); }
+  100% { transform: scale(1); }
+}
+
+/* Klasse die per JS kurz hinzugefügt wird */
+.cake-btn--clicked .cake-emoji {
+  animation: cakeWiggle 0.4s ease forwards;
+}
+
+/* Sanftes Pulsieren im Ruhezustand */
+@keyframes cakeIdle {
+  0%   { transform: scale(1); box-shadow: 0 8px 32px rgba(249, 168, 212, 0.5); }
+  50%  { transform: scale(1.02); box-shadow: 0 12px 40px rgba(249, 168, 212, 0.7); }
+  100% { transform: scale(1); box-shadow: 0 8px 32px rgba(249, 168, 212, 0.5); }
+}
+
+.cake-btn {
+  animation: cakeIdle 3s ease-in-out infinite;
+}
+
+/* Wenn geklickt, wird Idle kurz pausiert */
+.cake-btn--clicked {
+  animation: none;
+}
+
+/* --------------------------------------------------------------------------
+   2. FLOAT-ZAHLEN ("+X 🍰 schwebt nach oben")
+   -------------------------------------------------------------------------- */
+@keyframes floatUp {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.15);
+  }
+  80% {
+    opacity: 0.8;
+    transform: translateY(-70px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-110px) scale(0.8);
+  }
+}
+
+/* Float-Zahl Element (wird per JS erstellt) */
+.float-number {
+  position: absolute;
+  pointer-events: none;
+  font-size: 1.3rem;
+  font-weight: 900;
+  font-family: var(--font-main);
+  color: var(--color-brown-dark);
+  text-shadow:
+    1px 1px 0 var(--color-white),
+    -1px -1px 0 var(--color-white),
+    1px -1px 0 var(--color-white),
+    -1px 1px 0 var(--color-white);
+  white-space: nowrap;
+  animation: floatUp 1.2s ease-out forwards;
+  z-index: 20;
+  user-select: none;
+}
+
+/* Große Zahl für hohen Klick-Wert */
+.float-number--big {
+  font-size: 1.8rem;
+  color: var(--color-gold);
+}
+
+/* Kritischer Klick (goldene Farbe) */
+.float-number--crit {
+  font-size: 2.2rem;
+  color: var(--color-gold);
+  animation: floatUpCrit 1.4s ease-out forwards;
+}
+
+@keyframes floatUpCrit {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1.3) rotate(-5deg);
+  }
+  15% {
+    transform: translateY(-25px) scale(1.5) rotate(3deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-130px) scale(0.9) rotate(0deg);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. ACHIEVEMENT-TOAST (Einblenden von rechts)
+   -------------------------------------------------------------------------- */
+
+/* Wird per CSS-Klasse gesteuert (see main.css für Basis-Position) */
+/* .achievement-toast--visible in main.css */
+
+/* Shake-Animation für besondere Achievements */
+@keyframes toastShake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px) rotate(-1deg); }
+  40%       { transform: translateX(6px) rotate(1deg); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+
+/* --------------------------------------------------------------------------
+   4. SHOP-KAUF-PULS
+   -------------------------------------------------------------------------- */
+@keyframes buyPulse {
+  0%   { transform: scale(1); background-color: var(--color-green-light); }
+  30%  { transform: scale(1.04); background-color: #BBF7D0; }
+  60%  { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+/* Für Upgrade-Kauf: Gold-Puls */
+@keyframes buyPulseGold {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.04); background-color: var(--color-gold-light); }
+  60%  { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+.upgrade-card--just-bought {
+  animation: buyPulseGold 0.4s ease;
+}
+
+/* --------------------------------------------------------------------------
+   5. ZAHLEN-COUNTER (Hochzählen)
+   -------------------------------------------------------------------------- */
+@keyframes numberPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+.stat__value--popping {
+  animation: numberPop 0.2s ease;
+}
+
+/* --------------------------------------------------------------------------
+   6. EINBLEND-ANIMATIONEN
+   -------------------------------------------------------------------------- */
+
+/* Von unten einblenden */
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Von oben einblenden */
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Einblenden */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Skalier-Einblenden */
+@keyframes popIn {
+  0%   { transform: scale(0.5); opacity: 0; }
+  70%  { transform: scale(1.1); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* --------------------------------------------------------------------------
+   7. ACHIEVEMENT-BADGE FREISCHALTEN
+   -------------------------------------------------------------------------- */
+@keyframes achievementUnlock {
+  0%   { transform: scale(0.3) rotate(-30deg); opacity: 0; }
+  50%  { transform: scale(1.3) rotate(5deg); opacity: 1; }
+  75%  { transform: scale(0.9) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.achievement-badge--just-unlocked {
+  animation: achievementUnlock 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* --------------------------------------------------------------------------
+   8. PARTIKEL-EFFEKTE (kleine Kuchen-Emojis beim Klicken)
+   -------------------------------------------------------------------------- */
+@keyframes particleFly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(var(--rot));
+  }
+}
+
+.cake-particle {
+  position: absolute;
+  pointer-events: none;
+  font-size: 1rem;
+  animation: particleFly 0.8s ease-out forwards;
+  top: 50%;
+  left: 50%;
+  margin-left: -0.5rem;
+  margin-top: -0.5rem;
+  z-index: 15;
+}
+
+/* --------------------------------------------------------------------------
+   9. MILESTONE-FORTSCHRITTSBALKEN
+   -------------------------------------------------------------------------- */
+@keyframes progressPulse {
+  0%   { opacity: 1; }
+  50%  { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* Wenn Milestone fast erreicht (> 90%) */
+.milestone-progress--almost {
+  animation: progressPulse 1s ease-in-out infinite;
+}
+
+/* --------------------------------------------------------------------------
+   10. SHOP-KARTE ERSCHEINEN
+   -------------------------------------------------------------------------- */
+.building-card,
+.upgrade-card {
+  animation: fadeIn 0.3s ease;
+}
+
+/* --------------------------------------------------------------------------
+   11. OFFLINE-BANNER
+   -------------------------------------------------------------------------- */
+/* Bereits in main.css per slideInUp definiert */
+
+/* --------------------------------------------------------------------------
+   12. GOLDEN COOKIE / BONUS-EVENT (erweiterbar)
+   -------------------------------------------------------------------------- */
+@keyframes goldenSpin {
+  0%   { transform: scale(1) rotate(0deg); filter: brightness(1); }
+  25%  { transform: scale(1.1) rotate(90deg); filter: brightness(1.3); }
+  50%  { transform: scale(1.05) rotate(180deg); filter: brightness(1.1); }
+  75%  { transform: scale(1.1) rotate(270deg); filter: brightness(1.3); }
+  100% { transform: scale(1) rotate(360deg); filter: brightness(1); }
+}
+
+.cake-btn--golden {
+  animation: goldenSpin 1.5s linear infinite;
+  background: radial-gradient(circle at 40% 35%, #FFD700, #FFA500);
+  border-color: var(--color-gold);
+}
+
+/* --------------------------------------------------------------------------
+   13. PULSIERENDER KAUFEN-HINWEIS (wenn gerade leistbar)
+   -------------------------------------------------------------------------- */
+@keyframes affordablePulse {
+  0%   { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
+  50%  { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+}
+
+/* Nur für neues "gerade leistbar" - kurze Aufmerksamkeit */
+.building-card--newly-affordable {
+  animation: affordablePulse 0.8s ease 2;
+}
+
+/* --------------------------------------------------------------------------
+   14. SAVE-FEEDBACK ANIMATION
+   -------------------------------------------------------------------------- */
+@keyframes saveFeedback {
+  0%   { background-color: var(--color-white); color: var(--color-brown); }
+  30%  { background-color: var(--color-green-light); color: var(--color-green); }
+  100% { background-color: var(--color-white); color: var(--color-brown); }
+}
+
+.btn--save-success {
+  animation: saveFeedback 1.5s ease;
+}
+
+/* --------------------------------------------------------------------------
+   15. SHOP-TAB SWITCH
+   -------------------------------------------------------------------------- */
+@keyframes tabContentSlide {
+  from { opacity: 0; transform: translateX(10px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.shop-panel--active {
+  animation: tabContentSlide 0.2s ease;
+}
