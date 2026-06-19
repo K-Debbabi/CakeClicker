@@ -3,23 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>🍰 Kuchen Clicker</title>
+  <title>✨ Kuchen Clicker ULTRA</title>
 
-  <!-- Google Fonts: Nunito für ein warmes, gemütliches Feeling -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet" />
 
-  <!-- Stylesheets in Ladereihenfolge -->
   <link rel="stylesheet" href="css/main.css" />
   <link rel="stylesheet" href="css/shop.css" />
   <link rel="stylesheet" href="css/animations.css" />
 </head>
 <body>
 
-  <!-- ============================================================
-       ACHIEVEMENT TOAST – wird per JS ein-/ausgeblendet
-  ============================================================ -->
+  <!-- Animated background particles (JS fills this) -->
+  <div id="bg-particles" class="bg-particles" aria-hidden="true"></div>
+
+  <!-- Golden cake spawning layer (full viewport) -->
+  <div id="golden-cakes-container" class="golden-cakes-container" aria-hidden="true"></div>
+
+  <!-- Achievement Toast -->
   <div id="achievement-toast" class="achievement-toast" aria-live="polite">
     <span class="achievement-toast__icon">🏆</span>
     <div class="achievement-toast__text">
@@ -28,61 +30,75 @@
     </div>
   </div>
 
+  <!-- Center-screen frenzy banner -->
+  <div id="frenzy-notification" class="frenzy-notification" hidden aria-live="assertive">
+    <span id="frenzy-notification-text">🔥 FRENZY! x7 Produktion!</span>
+  </div>
+
   <!-- ============================================================
        HAUPTLAYOUT: 3 Spalten
   ============================================================ -->
   <div class="app-wrapper">
 
-    <!-- ── LINKE SPALTE: Statistiken & Achievements ── -->
+    <!-- ── LINKE SPALTE ── -->
     <aside class="panel panel--left" id="panel-left">
 
       <header class="panel__header">
-        <h1 class="game-title">🍰 Kuchen&shy;Clicker</h1>
+        <h1 class="game-title">🍰 Kuchen<wbr>Clicker</h1>
+        <div class="game-subtitle">ULTRA EDITION</div>
       </header>
 
-      <!-- Kuchen-Statistiken -->
       <section class="stats-box">
         <div class="stat stat--main">
           <span id="cookie-count" class="stat__value">0</span>
-          <span class="stat__label">Kuchen</span>
+          <span class="stat__label">✨ Kuchen</span>
         </div>
         <div class="stat">
-          <span id="cps-display" class="stat__value">0</span>
           <span class="stat__label">pro Sekunde</span>
+          <span id="cps-display" class="stat__value stat__value--glow">0</span>
         </div>
         <div class="stat">
-          <span id="cpc-display" class="stat__value">1</span>
           <span class="stat__label">pro Klick</span>
+          <span id="cpc-display" class="stat__value">1</span>
         </div>
         <div class="stat stat--small">
           <span class="stat__label">Gesamt produziert:</span>
           <span id="total-cookies" class="stat__value stat__value--small">0</span>
         </div>
+        <div class="stat prestige-stat" id="prestige-stat" hidden>
+          <span class="stat__label">👑 Prestige</span>
+          <span id="prestige-count-display" class="stat__value stat__value--prestige">0</span>
+        </div>
+        <div class="stat prestige-stat" id="heavenly-stat" hidden>
+          <span class="stat__label">☁️ Himml. Chips</span>
+          <span id="heavenly-chips-display" class="stat__value stat__value--prestige">0</span>
+        </div>
+        <div class="stat prestige-stat" id="prestige-mult-stat" hidden>
+          <span class="stat__label">⚡ Prestige-Bonus</span>
+          <span id="prestige-mult-display" class="stat__value stat__value--prestige">x1.00</span>
+        </div>
       </section>
 
-      <!-- Gebäude-Übersicht -->
       <section class="owned-buildings">
-        <h2 class="section-title">Meine Gebäude</h2>
+        <h2 class="section-title">⚙️ Meine Gebäude</h2>
         <ul id="owned-buildings-list" class="buildings-list">
-          <!-- Wird per JS befüllt -->
           <li class="buildings-list__empty">Noch keine Gebäude</li>
         </ul>
       </section>
 
-      <!-- Achievements -->
       <section class="achievements-section">
-        <h2 class="section-title">Erfolge</h2>
-        <div id="achievements-grid" class="achievements-grid">
-          <!-- Wird per JS befüllt -->
-        </div>
+        <h2 class="section-title">
+          🏆 Erfolge
+          <span id="achievement-count" class="achievement-count">0/35</span>
+        </h2>
+        <div id="achievements-grid" class="achievements-grid"></div>
       </section>
 
     </aside>
 
-    <!-- ── MITTLERE SPALTE: Spiel-Bereich ── -->
+    <!-- ── MITTLERE SPALTE ── -->
     <main class="panel panel--center" id="panel-center">
 
-      <!-- Milestone-Anzeige -->
       <div class="milestone-bar" id="milestone-bar">
         <span id="milestone-text">Erstes Ziel: 10 Kuchen backen!</span>
         <div class="milestone-progress-wrap">
@@ -90,7 +106,15 @@
         </div>
       </div>
 
-      <!-- Klickbarer Kuchen -->
+      <!-- Frenzy bar (hidden when inactive) -->
+      <div class="frenzy-bar" id="frenzy-bar" hidden>
+        <span id="frenzy-label">🔥 FRENZY x7</span>
+        <div class="frenzy-progress-wrap">
+          <div class="frenzy-progress" id="frenzy-progress"></div>
+        </div>
+        <span id="frenzy-timer">77s</span>
+      </div>
+
       <div class="cake-area">
         <button
           class="cake-btn"
@@ -98,34 +122,41 @@
           aria-label="Kuchen klicken"
           title="Klick für Kuchen!"
         >
+          <div class="cake-btn__aura"></div>
+          <div class="cake-btn__ring"></div>
+          <div class="cake-btn__ring cake-btn__ring--2"></div>
           <span class="cake-emoji" id="cake-emoji">🍰</span>
         </button>
-
-        <!-- Partikel-Container (Float-Zahlen erscheinen hier) -->
         <div class="cake-particles" id="cake-particles" aria-hidden="true"></div>
       </div>
 
-      <!-- Kurzinfo unter dem Kuchen -->
+      <!-- Combo counter -->
+      <div class="combo-display" id="combo-display">
+        <span class="combo-display__label">COMBO</span>
+        <span class="combo-display__value" id="combo-value">x1</span>
+        <span class="combo-display__bonus" id="combo-bonus"></span>
+      </div>
+
       <div class="cake-info">
-        <p id="cake-info-text" class="cake-info__text">
-          Klicke den Kuchen, um Kuchen zu backen!
-        </p>
+        <p id="cake-info-text" class="cake-info__text">Klicke den Kuchen, um Kuchen zu backen!</p>
       </div>
 
-      <!-- Aktions-Buttons -->
+      <!-- Prestige CTA (appears when eligible) -->
+      <div class="prestige-section" id="prestige-section" hidden>
+        <button class="btn btn--prestige" id="btn-prestige">
+          👑 Aufsteigen! +<span id="prestige-chips-preview">0</span> ☁️ Chips
+        </button>
+        <p class="prestige-hint">Starte neu — mit dauerhaftem Produktion-Bonus!</p>
+      </div>
+
       <div class="action-buttons">
-        <button class="btn btn--secondary" id="btn-save" title="Spiel manuell speichern">
-          💾 Speichern
-        </button>
-        <button class="btn btn--danger" id="btn-reset" title="Spielstand löschen">
-          🗑️ Zurücksetzen
-        </button>
+        <button class="btn btn--secondary" id="btn-save">💾 Speichern</button>
+        <button class="btn btn--danger" id="btn-reset">🗑️ Reset</button>
       </div>
 
-      <!-- Offline-Progress Banner (wird per JS gezeigt/versteckt) -->
       <div class="offline-banner" id="offline-banner" hidden>
         <span class="offline-banner__icon">⏰</span>
-        <span id="offline-banner-text">Willkommen zurück! Während deiner Abwesenheit wurden X Kuchen gebacken.</span>
+        <span id="offline-banner-text">Willkommen zurück!</span>
         <button class="offline-banner__close" id="offline-banner-close" aria-label="Schließen">✕</button>
       </div>
 
@@ -135,85 +166,91 @@
     <aside class="panel panel--right" id="panel-right">
 
       <header class="panel__header">
-        <h2 class="shop-title">🛒 Bäckerei-Shop</h2>
-        <!-- Tab-Navigation -->
+        <h2 class="shop-title">🛒 Shop</h2>
         <div class="shop-tabs" role="tablist">
-          <button
-            class="shop-tab shop-tab--active"
-            id="tab-buildings"
-            role="tab"
-            aria-selected="true"
-            aria-controls="shop-buildings"
-            data-tab="buildings"
-          >
+          <button class="shop-tab shop-tab--active" id="tab-buildings" role="tab"
+            aria-selected="true" aria-controls="shop-buildings" data-tab="buildings">
             🏠 Gebäude
           </button>
-          <button
-            class="shop-tab"
-            id="tab-upgrades"
-            role="tab"
-            aria-selected="false"
-            aria-controls="shop-upgrades"
-            data-tab="upgrades"
-          >
+          <button class="shop-tab" id="tab-upgrades" role="tab"
+            aria-selected="false" aria-controls="shop-upgrades" data-tab="upgrades">
             ⬆️ Upgrades
+          </button>
+          <button class="shop-tab" id="tab-prestige" role="tab"
+            aria-selected="false" aria-controls="shop-prestige" data-tab="prestige">
+            👑 Prestige
           </button>
         </div>
       </header>
 
-      <!-- Gebäude-Liste -->
-      <div
-        class="shop-panel shop-panel--active"
-        id="shop-buildings"
-        role="tabpanel"
-        aria-labelledby="tab-buildings"
-      >
-        <ul id="buildings-list" class="shop-list">
-          <!-- Wird per JS befüllt -->
-        </ul>
+      <div class="shop-panel shop-panel--active" id="shop-buildings" role="tabpanel" aria-labelledby="tab-buildings">
+        <ul id="buildings-list" class="shop-list"></ul>
       </div>
 
-      <!-- Upgrades-Liste -->
-      <div
-        class="shop-panel"
-        id="shop-upgrades"
-        role="tabpanel"
-        aria-labelledby="tab-upgrades"
-      >
-        <ul id="upgrades-list" class="shop-list">
-          <!-- Wird per JS befüllt -->
-        </ul>
+      <div class="shop-panel" id="shop-upgrades" role="tabpanel" aria-labelledby="tab-upgrades">
+        <ul id="upgrades-list" class="shop-list"></ul>
+      </div>
+
+      <div class="shop-panel" id="shop-prestige" role="tabpanel" aria-labelledby="tab-prestige">
+        <div id="prestige-panel" class="prestige-panel"></div>
       </div>
 
     </aside>
 
-  </div><!-- /.app-wrapper -->
+  </div>
 
-  <!-- ============================================================
-       RESET-BESTÄTIGUNGS-DIALOG
-  ============================================================ -->
+  <!-- Scrolling news ticker -->
+  <div class="news-ticker" id="news-ticker" aria-hidden="true">
+    <span class="news-ticker__label">📰 KUCHEN NEWS</span>
+    <div class="news-ticker__track">
+      <span class="news-ticker__text" id="news-ticker-text"></span>
+    </div>
+  </div>
+
+  <!-- Reset Dialog -->
   <dialog class="confirm-dialog" id="reset-dialog">
     <div class="confirm-dialog__content">
-      <h3 class="confirm-dialog__title">⚠️ Spielstand löschen?</h3>
+      <h3 class="confirm-dialog__title">⚠️ Alles löschen?</h3>
       <p class="confirm-dialog__text">
-        Alle Kuchen, Gebäude, Upgrades und Erfolge werden unwiderruflich gelöscht.
-        Bist du sicher?
+        Alle Kuchen, Gebäude, Upgrades, Erfolge und Prestige-Daten werden
+        unwiderruflich gelöscht. Bist du sicher?
       </p>
       <div class="confirm-dialog__buttons">
         <button class="btn btn--secondary" id="reset-cancel">Abbrechen</button>
-        <button class="btn btn--danger" id="reset-confirm">Ja, alles löschen</button>
+        <button class="btn btn--danger" id="reset-confirm">Ja, löschen!</button>
       </div>
     </div>
   </dialog>
 
-  <!-- ============================================================
-       JAVASCRIPT – Ladereihenfolge beachten!
-       1. game.js   → Zustand & Spiellogik (muss zuerst geladen sein)
-       2. upgrades.js → Upgrade-Definitionen (braucht game.js)
-       3. save.js   → Speichern/Laden
-       4. shop.js   → Shop-Logik
-       5. ui.js     → DOM-Updates (muss zuletzt geladen sein)
-  ============================================================ -->
+  <!-- Prestige Dialog -->
+  <dialog class="confirm-dialog prestige-dialog" id="prestige-dialog">
+    <div class="confirm-dialog__content">
+      <h3 class="confirm-dialog__title">👑 Aufsteigen?</h3>
+      <p class="confirm-dialog__text">
+        Dein Kuchenimperium geht in die Legenden ein. Du startest von vorne –
+        aber mit einem dauerhaften Bonus auf alle Produktion!
+      </p>
+      <div class="prestige-info" id="prestige-info">
+        <div class="prestige-info__row">
+          <span>Neue Chips:</span>
+          <span id="prestige-new-chips" class="prestige-info__value">+0</span>
+        </div>
+        <div class="prestige-info__row">
+          <span>Chips gesamt:</span>
+          <span id="prestige-total-chips" class="prestige-info__value">0</span>
+        </div>
+        <div class="prestige-info__row">
+          <span>Neuer Dauerhaft-Bonus:</span>
+          <span id="prestige-new-bonus" class="prestige-info__value">x1.00</span>
+        </div>
+      </div>
+      <div class="confirm-dialog__buttons">
+        <button class="btn btn--secondary" id="prestige-cancel">Noch nicht</button>
+        <button class="btn btn--prestige" id="prestige-confirm">👑 Aufsteigen!</button>
+      </div>
+    </div>
+  </dialog>
+
   <script src="js/game.js"></script>
   <script src="js/upgrades.js"></script>
   <script src="js/save.js"></script>

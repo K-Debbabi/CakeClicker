@@ -1,333 +1,323 @@
 /* ==========================================================================
-   animations.css – Alle CSS-Animationen für Kuchen Clicker
-   Enthält: Kuchen-Wackeln, Float-Zahlen, Achievement-Toast,
-            Shop-Kauf-Pulse, Slide-Ins, Schimmer-Effekte
+   animations.css – Kuchen Clicker ULTRA Animations
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
-   1. KUCHEN-KLICK-ANIMATION
+   CAKE BUTTON
    -------------------------------------------------------------------------- */
+@keyframes cakeIdleFloat {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  25%       { transform: translateY(-6px) rotate(1deg); }
+  75%       { transform: translateY(-3px) rotate(-0.5deg); }
+}
 
-/* Wackel-Animation beim Klicken auf den Kuchen */
 @keyframes cakeWiggle {
   0%   { transform: scale(1) rotate(0deg); }
-  15%  { transform: scale(1.12) rotate(-4deg); }
-  30%  { transform: scale(1.08) rotate(3deg); }
-  45%  { transform: scale(1.1) rotate(-2deg); }
-  60%  { transform: scale(1.05) rotate(1deg); }
-  75%  { transform: scale(1.02) rotate(-0.5deg); }
+  15%  { transform: scale(0.9) rotate(-8deg); }
+  30%  { transform: scale(1.15) rotate(6deg); }
+  45%  { transform: scale(0.95) rotate(-4deg); }
+  60%  { transform: scale(1.08) rotate(3deg); }
+  75%  { transform: scale(0.98) rotate(-1deg); }
   100% { transform: scale(1) rotate(0deg); }
 }
 
-/* Spring-Animation beim Klick */
-@keyframes cakeSpring {
-  0%   { transform: scale(1); }
-  25%  { transform: scale(0.9); }
-  50%  { transform: scale(1.15); }
-  75%  { transform: scale(0.97); }
-  100% { transform: scale(1); }
-}
-
-/* Klasse die per JS kurz hinzugefügt wird */
-.cake-btn--clicked .cake-emoji {
-  animation: cakeWiggle 0.4s ease forwards;
-}
-
-/* Sanftes Pulsieren im Ruhezustand */
-@keyframes cakeIdle {
-  0%   { transform: scale(1); box-shadow: 0 8px 32px rgba(249, 168, 212, 0.5); }
-  50%  { transform: scale(1.02); box-shadow: 0 12px 40px rgba(249, 168, 212, 0.7); }
-  100% { transform: scale(1); box-shadow: 0 8px 32px rgba(249, 168, 212, 0.5); }
-}
-
-.cake-btn {
-  animation: cakeIdle 3s ease-in-out infinite;
-}
-
-/* Wenn geklickt, wird Idle kurz pausiert */
 .cake-btn--clicked {
-  animation: none;
+  animation: cakeWiggle 0.45s ease-out forwards !important;
+}
+
+@keyframes auraPulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50%       { opacity: 1;   transform: scale(1.08); }
+}
+
+@keyframes ringRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 /* --------------------------------------------------------------------------
-   2. FLOAT-ZAHLEN ("+X 🍰 schwebt nach oben")
+   FLOAT NUMBERS
    -------------------------------------------------------------------------- */
-@keyframes floatUp {
-  0% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(-20px) scale(1.15);
-  }
-  80% {
-    opacity: 0.8;
-    transform: translateY(-70px) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-110px) scale(0.8);
-  }
-}
-
-/* Float-Zahl Element (wird per JS erstellt) */
 .float-number {
   position: absolute;
-  pointer-events: none;
-  font-size: 1.3rem;
+  font-size: 1.1rem;
   font-weight: 900;
-  font-family: var(--font-main);
-  color: var(--color-brown-dark);
-  text-shadow:
-    1px 1px 0 var(--color-white),
-    -1px -1px 0 var(--color-white),
-    1px -1px 0 var(--color-white),
-    -1px 1px 0 var(--color-white);
-  white-space: nowrap;
-  animation: floatUp 1.2s ease-out forwards;
-  z-index: 20;
+  color: var(--accent-pink);
+  pointer-events: none;
   user-select: none;
+  text-shadow: 0 0 8px rgba(255, 107, 214, 0.8);
+  font-family: var(--font-head);
+  animation: floatUp 1.3s ease-out forwards;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  z-index: 50;
 }
 
-/* Große Zahl für hohen Klick-Wert */
 .float-number--big {
-  font-size: 1.8rem;
-  color: var(--color-gold);
+  font-size: 1.4rem;
+  color: var(--accent-gold);
+  text-shadow: var(--glow-gold);
 }
 
-/* Kritischer Klick (goldene Farbe) */
 .float-number--crit {
-  font-size: 2.2rem;
-  color: var(--color-gold);
-  animation: floatUpCrit 1.4s ease-out forwards;
+  font-size: 1.9rem;
+  color: var(--accent-gold-bright);
+  text-shadow: 0 0 20px rgba(255, 215, 0, 1), 0 0 40px rgba(255, 215, 0, 0.5);
+  animation: critFloat 1.5s ease-out forwards;
 }
 
-@keyframes floatUpCrit {
-  0% {
-    opacity: 1;
-    transform: translateY(0) scale(1.3) rotate(-5deg);
-  }
-  15% {
-    transform: translateY(-25px) scale(1.5) rotate(3deg);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-130px) scale(0.9) rotate(0deg);
-  }
+@keyframes floatUp {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1); }
+  20%  { opacity: 1; transform: translateX(-50%) translateY(-20px) scale(1.1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-80px) scale(0.8); }
 }
 
-/* --------------------------------------------------------------------------
-   3. ACHIEVEMENT-TOAST (Einblenden von rechts)
-   -------------------------------------------------------------------------- */
-
-/* Wird per CSS-Klasse gesteuert (see main.css für Basis-Position) */
-/* .achievement-toast--visible in main.css */
-
-/* Shake-Animation für besondere Achievements */
-@keyframes toastShake {
-  0%, 100% { transform: translateX(0); }
-  20%       { transform: translateX(-6px) rotate(-1deg); }
-  40%       { transform: translateX(6px) rotate(1deg); }
-  60%       { transform: translateX(-4px); }
-  80%       { transform: translateX(4px); }
+@keyframes critFloat {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0)     scale(1.5); }
+  10%  {             transform: translateX(-50%) translateY(-10px)  scale(2); }
+  30%  { opacity: 1; transform: translateX(-50%) translateY(-30px)  scale(1.6); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-100px) scale(0.8); }
 }
 
 /* --------------------------------------------------------------------------
-   4. SHOP-KAUF-PULS
+   PARTICLES
    -------------------------------------------------------------------------- */
-@keyframes buyPulse {
-  0%   { transform: scale(1); background-color: var(--color-green-light); }
-  30%  { transform: scale(1.04); background-color: #BBF7D0; }
-  60%  { transform: scale(0.98); }
-  100% { transform: scale(1); }
-}
-
-/* Für Upgrade-Kauf: Gold-Puls */
-@keyframes buyPulseGold {
-  0%   { transform: scale(1); }
-  30%  { transform: scale(1.04); background-color: var(--color-gold-light); }
-  60%  { transform: scale(0.98); }
-  100% { transform: scale(1); }
-}
-
-.upgrade-card--just-bought {
-  animation: buyPulseGold 0.4s ease;
-}
-
-/* --------------------------------------------------------------------------
-   5. ZAHLEN-COUNTER (Hochzählen)
-   -------------------------------------------------------------------------- */
-@keyframes numberPop {
-  0%   { transform: scale(1); }
-  50%  { transform: scale(1.08); }
-  100% { transform: scale(1); }
-}
-
-.stat__value--popping {
-  animation: numberPop 0.2s ease;
-}
-
-/* --------------------------------------------------------------------------
-   6. EINBLEND-ANIMATIONEN
-   -------------------------------------------------------------------------- */
-
-/* Von unten einblenden */
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Von oben einblenden */
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Einblenden */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-/* Skalier-Einblenden */
-@keyframes popIn {
-  0%   { transform: scale(0.5); opacity: 0; }
-  70%  { transform: scale(1.1); opacity: 1; }
-  100% { transform: scale(1); opacity: 1; }
-}
-
-/* --------------------------------------------------------------------------
-   7. ACHIEVEMENT-BADGE FREISCHALTEN
-   -------------------------------------------------------------------------- */
-@keyframes achievementUnlock {
-  0%   { transform: scale(0.3) rotate(-30deg); opacity: 0; }
-  50%  { transform: scale(1.3) rotate(5deg); opacity: 1; }
-  75%  { transform: scale(0.9) rotate(-2deg); }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; }
-}
-
-.achievement-badge--just-unlocked {
-  animation: achievementUnlock 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* --------------------------------------------------------------------------
-   8. PARTIKEL-EFFEKTE (kleine Kuchen-Emojis beim Klicken)
-   -------------------------------------------------------------------------- */
-@keyframes particleFly {
-  0% {
-    opacity: 1;
-    transform: translate(0, 0) scale(1) rotate(0deg);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(var(--rot));
-  }
-}
-
 .cake-particle {
   position: absolute;
+  font-size: 1.1rem;
   pointer-events: none;
-  font-size: 1rem;
-  animation: particleFly 0.8s ease-out forwards;
-  top: 50%;
-  left: 50%;
-  margin-left: -0.5rem;
-  margin-top: -0.5rem;
-  z-index: 15;
+  user-select: none;
+  animation: particleBurst 0.9s ease-out forwards;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+}
+
+@keyframes particleBurst {
+  0%   { opacity: 1; transform: translate(-50%, -50%) translate(0, 0) rotate(0deg) scale(1); }
+  70%  { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.3); }
 }
 
 /* --------------------------------------------------------------------------
-   9. MILESTONE-FORTSCHRITTSBALKEN
+   CRIT SCREEN FLASH
+   -------------------------------------------------------------------------- */
+.crit-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center,
+    rgba(255, 215, 0, 0.3) 0%,
+    rgba(255, 107, 214, 0.1) 50%,
+    transparent 75%);
+  pointer-events: none;
+  z-index: 700;
+  animation: critFlash 0.4s ease-out forwards;
+}
+
+@keyframes critFlash {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes screenShake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10%       { transform: translate(-4px, -2px) rotate(-0.5deg); }
+  20%       { transform: translate(4px,  2px) rotate(0.5deg); }
+  30%       { transform: translate(-3px,  3px) rotate(-0.3deg); }
+  40%       { transform: translate(3px, -3px) rotate(0.3deg); }
+  50%       { transform: translate(-2px,  1px); }
+  60%       { transform: translate(2px, -1px); }
+  70%       { transform: translate(-1px,  2px); }
+  80%       { transform: translate(1px, -2px); }
+  90%       { transform: translate(-1px,  1px); }
+}
+
+.body--shake { animation: screenShake 0.4s ease-out; }
+
+/* --------------------------------------------------------------------------
+   GOLDEN CAKE
+   -------------------------------------------------------------------------- */
+@keyframes goldenCakePulse {
+  0%   { filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.7));  transform: scale(1); }
+  100% { filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 40px rgba(255, 160, 0, 0.5)); transform: scale(1.08); }
+}
+
+@keyframes goldenCakeBob {
+  0%, 100% { margin-top: 0; }
+  50%       { margin-top: -10px; }
+}
+
+@keyframes goldenRingShrink {
+  0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(0.1); opacity: 0; }
+}
+
+.golden-cake--vanish {
+  animation: goldenCakeVanish 0.4s ease-out forwards !important;
+}
+
+@keyframes goldenCakeVanish {
+  0%   { opacity: 1; transform: scale(1); }
+  50%  { transform: scale(1.5); }
+  100% { opacity: 0; transform: scale(0); }
+}
+
+.golden-cake--clicked {
+  animation: goldenCakeClicked 0.5s ease-out forwards !important;
+}
+
+@keyframes goldenCakeClicked {
+  0%   { transform: scale(1); opacity: 1; }
+  30%  { transform: scale(2); opacity: 1; }
+  100% { transform: scale(0); opacity: 0; }
+}
+
+.golden-bonus-float {
+  position: fixed;
+  top: 38%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.8rem;
+  font-weight: 900;
+  font-family: var(--font-head);
+  color: var(--accent-gold-bright);
+  text-shadow: var(--glow-gold);
+  pointer-events: none;
+  z-index: 900;
+  animation: goldenBonusFloat 2.5s ease-out forwards;
+  white-space: nowrap;
+  text-align: center;
+}
+
+@keyframes goldenBonusFloat {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(0)    scale(0.5); }
+  15%  { opacity: 1; transform: translateX(-50%) translateY(-20px) scale(1.2); }
+  40%  { opacity: 1; transform: translateX(-50%) translateY(-40px) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-100px) scale(0.8); }
+}
+
+/* --------------------------------------------------------------------------
+   COMBO
+   -------------------------------------------------------------------------- */
+@keyframes comboPop {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.5); }
+  60%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+.combo-display__value--pop { animation: comboPop 0.25s ease-out; }
+
+/* --------------------------------------------------------------------------
+   BACKGROUND PARTICLES
+   -------------------------------------------------------------------------- */
+@keyframes bgFloat {
+  0%   { transform: translateY(0px) rotate(0deg);    }
+  33%  { transform: translateY(-40px) rotate(120deg); }
+  66%  { transform: translateY(20px)  rotate(240deg); }
+  100% { transform: translateY(0px)   rotate(360deg); }
+}
+
+/* --------------------------------------------------------------------------
+   PROGRESS BAR
    -------------------------------------------------------------------------- */
 @keyframes progressPulse {
-  0%   { opacity: 1; }
-  50%  { opacity: 0.7; }
-  100% { opacity: 1; }
+  from { box-shadow: 0 0 8px rgba(255, 107, 214, 0.4); }
+  to   { box-shadow: 0 0 20px rgba(255, 107, 214, 0.9), 0 0 40px rgba(251, 191, 36, 0.4); }
 }
 
-/* Wenn Milestone fast erreicht (> 90%) */
-.milestone-progress--almost {
-  animation: progressPulse 1s ease-in-out infinite;
+.milestone-progress--almost { animation: progressPulse 0.8s ease-in-out infinite alternate; }
+
+/* --------------------------------------------------------------------------
+   FRENZY
+   -------------------------------------------------------------------------- */
+@keyframes frenzyBarPulse {
+  from { box-shadow: var(--glow-gold); }
+  to   { box-shadow: 0 0 30px rgba(251, 191, 36, 0.8), 0 0 60px rgba(251, 146, 60, 0.4); }
+}
+
+.frenzy-bar { animation: frenzyBarPulse 0.5s ease-in-out infinite alternate; }
+
+@keyframes frenzyNotificationIn {
+  from { transform: translate(-50%, -50%) scale(0.3) rotate(-10deg); opacity: 0; }
+  to   { transform: translate(-50%, -50%) scale(1)   rotate(0deg);   opacity: 1; }
+}
+
+.frenzy-notification { animation: frenzyNotificationIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+.panel--center.panel--frenzy { animation: frenzyPanelGlow 0.6s ease-in-out infinite alternate; }
+
+@keyframes frenzyPanelGlow {
+  from { background: radial-gradient(ellipse at center, rgba(251, 146, 60, 0.05) 0%, transparent 70%); }
+  to   { background: radial-gradient(ellipse at center, rgba(251, 191, 36, 0.12) 0%, transparent 70%); }
+}
+
+/* Click frenzy (blue glow) */
+.panel--center.panel--click-frenzy { animation: clickFrenzyPanelGlow 0.3s ease-in-out infinite alternate; }
+
+@keyframes clickFrenzyPanelGlow {
+  from { background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.05) 0%, transparent 70%); }
+  to   { background: radial-gradient(ellipse at center, rgba(34, 211, 238, 0.15) 0%, transparent 70%); }
 }
 
 /* --------------------------------------------------------------------------
-   10. SHOP-KARTE ERSCHEINEN
+   PRESTIGE
    -------------------------------------------------------------------------- */
-.building-card,
-.upgrade-card {
-  animation: fadeIn 0.3s ease;
+@keyframes prestigePulse {
+  from { box-shadow: var(--glow-gold); }
+  to   { box-shadow: 0 0 30px rgba(251, 191, 36, 0.9), 0 0 60px rgba(255, 107, 214, 0.3); }
+}
+
+.btn--prestige { animation: prestigePulse 2s ease-in-out infinite alternate; }
+
+/* --------------------------------------------------------------------------
+   TOASTS & BANNERS
+   -------------------------------------------------------------------------- */
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(40px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
 }
 
 /* --------------------------------------------------------------------------
-   11. OFFLINE-BANNER
+   SHOP CARDS
    -------------------------------------------------------------------------- */
-/* Bereits in main.css per slideInUp definiert */
+.building-card--newly-affordable { animation: newlyAffordable 0.8s ease-out; }
 
-/* --------------------------------------------------------------------------
-   12. GOLDEN COOKIE / BONUS-EVENT (erweiterbar)
-   -------------------------------------------------------------------------- */
-@keyframes goldenSpin {
-  0%   { transform: scale(1) rotate(0deg); filter: brightness(1); }
-  25%  { transform: scale(1.1) rotate(90deg); filter: brightness(1.3); }
-  50%  { transform: scale(1.05) rotate(180deg); filter: brightness(1.1); }
-  75%  { transform: scale(1.1) rotate(270deg); filter: brightness(1.3); }
-  100% { transform: scale(1) rotate(360deg); filter: brightness(1); }
+@keyframes newlyAffordable {
+  0%   { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.5); }
+  50%  { box-shadow: 0 0 0 6px rgba(74, 222, 128, 0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
 }
 
-.cake-btn--golden {
-  animation: goldenSpin 1.5s linear infinite;
-  background: radial-gradient(circle at 40% 35%, #FFD700, #FFA500);
-  border-color: var(--color-gold);
-}
+.building-card--just-bought { animation: justBought 0.4s ease-out; }
+.upgrade-card--just-bought  { animation: justBought 0.4s ease-out; }
 
-/* --------------------------------------------------------------------------
-   13. PULSIERENDER KAUFEN-HINWEIS (wenn gerade leistbar)
-   -------------------------------------------------------------------------- */
-@keyframes affordablePulse {
-  0%   { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
-  50%  { box-shadow: 0 0 0 6px rgba(22, 163, 74, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
-}
-
-/* Nur für neues "gerade leistbar" - kurze Aufmerksamkeit */
-.building-card--newly-affordable {
-  animation: affordablePulse 0.8s ease 2;
+@keyframes justBought {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.95); background: rgba(74, 222, 128, 0.15); }
+  60%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
 }
 
 /* --------------------------------------------------------------------------
-   14. SAVE-FEEDBACK ANIMATION
+   NEWS TICKER
    -------------------------------------------------------------------------- */
-@keyframes saveFeedback {
-  0%   { background-color: var(--color-white); color: var(--color-brown); }
-  30%  { background-color: var(--color-green-light); color: var(--color-green); }
-  100% { background-color: var(--color-white); color: var(--color-brown); }
-}
-
-.btn--save-success {
-  animation: saveFeedback 1.5s ease;
+@keyframes tickerScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
 }
 
 /* --------------------------------------------------------------------------
-   15. SHOP-TAB SWITCH
+   MISC
    -------------------------------------------------------------------------- */
-@keyframes tabContentSlide {
-  from { opacity: 0; transform: translateX(10px); }
-  to   { opacity: 1; transform: translateX(0); }
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.5); }
+  70%  { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
-.shop-panel--active {
-  animation: tabContentSlide 0.2s ease;
-}
+.anim-pop { animation: popIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
