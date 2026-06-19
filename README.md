@@ -1,3 +1,0 @@
-# CakeClicker
-
-In Progress
