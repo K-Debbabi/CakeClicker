@@ -1,0 +1,466 @@
+/* ==========================================================================
+   shop.css – Styles für den Bäckerei-Shop (rechte Spalte)
+   Enthält: Shop-Layout, Tab-Navigation, Gebäude-Karten, Upgrade-Karten,
+            Zustands-Varianten (kaufbar, nicht kaufbar, bereits gekauft)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   RECHTE SPALTE – Shop-Panel
+   -------------------------------------------------------------------------- */
+.panel--right {
+  border-left: 2px solid var(--color-pink-light);
+  background-color: var(--color-bg);
+  overflow: hidden; /* Shop-Content scrollt, Header nicht */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Shop-Titel im Header */
+.shop-title {
+  font-size: var(--font-size-lg);
+  font-weight: 900;
+  color: var(--color-brown-dark);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* --------------------------------------------------------------------------
+   TAB-NAVIGATION
+   -------------------------------------------------------------------------- */
+.shop-tabs {
+  display: flex;
+  gap: var(--spacing-xs);
+  background-color: var(--color-bg-dark);
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-md);
+}
+
+.shop-tab {
+  flex: 1;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-brown-light);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast);
+  text-align: center;
+}
+
+.shop-tab:hover {
+  color: var(--color-brown-dark);
+  background-color: var(--color-white);
+}
+
+.shop-tab--active {
+  background-color: var(--color-white);
+  color: var(--color-brown-dark);
+  box-shadow: var(--shadow-sm);
+}
+
+/* --------------------------------------------------------------------------
+   SHOP-PANEL (Tab-Inhalt)
+   -------------------------------------------------------------------------- */
+.shop-panel {
+  display: none; /* Standardmäßig versteckt */
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-lg);
+}
+
+.shop-panel--active {
+  display: block;
+}
+
+/* Scrollbar für Shop */
+.shop-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.shop-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shop-panel::-webkit-scrollbar-thumb {
+  background-color: var(--color-pink-light);
+  border-radius: var(--radius-full);
+}
+
+.shop-panel::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-pink);
+}
+
+/* --------------------------------------------------------------------------
+   SHOP-LISTE (gemeinsame Basis)
+   -------------------------------------------------------------------------- */
+.shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: 0;
+}
+
+/* --------------------------------------------------------------------------
+   GEBÄUDE-KARTE
+   -------------------------------------------------------------------------- */
+.building-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  background-color: var(--color-white);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Schimmer-Effekt beim Hover (kaufbar) */
+.building-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+  pointer-events: none;
+}
+
+.building-card:hover::before {
+  transform: translateX(100%);
+}
+
+/* Gebäude-Icon */
+.building-card__icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  width: 44px;
+  text-align: center;
+}
+
+/* Gebäude-Info (Name, Beschreibung) */
+.building-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.building-card__name {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-brown-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.building-card__desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-brown-light);
+  font-weight: 600;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.building-card__cps {
+  font-size: var(--font-size-xs);
+  color: var(--color-green);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* Rechte Seite: Preis & Anzahl */
+.building-card__right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.building-card__price {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-brown-dark);
+  white-space: nowrap;
+}
+
+.building-card__price-icon {
+  margin-right: 2px;
+}
+
+.building-card__count {
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  background-color: var(--color-pink);
+  color: var(--color-white);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  min-width: 28px;
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   GEBÄUDE-KARTE – ZUSTÄNDE
+   -------------------------------------------------------------------------- */
+
+/* Kaufbar: grüner Rahmen, hellgrüner Hintergrund */
+.building-card--affordable {
+  border-color: var(--color-green);
+  background-color: var(--color-green-light);
+}
+
+.building-card--affordable .building-card__name {
+  color: var(--color-brown-dark);
+}
+
+.building-card--affordable:hover {
+  transform: translateY(-2px) scale(1.01);
+  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.2);
+}
+
+.building-card--affordable:active {
+  transform: scale(0.99);
+}
+
+.building-card--affordable .building-card__price {
+  color: var(--color-green);
+}
+
+/* Nicht leistbar: ausgegraut */
+.building-card--unaffordable {
+  border-color: var(--color-gray-light);
+  background-color: var(--color-gray-light);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.building-card--unaffordable .building-card__name {
+  color: var(--color-gray);
+}
+
+.building-card--unaffordable .building-card__price {
+  color: var(--color-gray);
+}
+
+.building-card--unaffordable .building-card__count {
+  background-color: var(--color-gray);
+}
+
+.building-card--unaffordable:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Gerade erst gekauft: kurzer Pulse */
+.building-card--just-bought {
+  animation: buyPulse 0.4s ease;
+}
+
+/* --------------------------------------------------------------------------
+   UPGRADE-KARTE
+   -------------------------------------------------------------------------- */
+.upgrade-card {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 2px solid transparent;
+  background-color: var(--color-white);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+/* Upgrade-Icon */
+.upgrade-card__icon {
+  font-size: 1.6rem;
+  flex-shrink: 0;
+  width: 38px;
+  text-align: center;
+}
+
+/* Upgrade-Info */
+.upgrade-card__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.upgrade-card__name {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-brown-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.upgrade-card__desc {
+  font-size: var(--font-size-xs);
+  color: var(--color-brown-light);
+  font-weight: 600;
+  margin-top: 1px;
+}
+
+.upgrade-card__effect {
+  font-size: var(--font-size-xs);
+  color: var(--color-gold);
+  font-weight: 700;
+  margin-top: 2px;
+}
+
+/* Preis */
+.upgrade-card__price {
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-brown-dark);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   UPGRADE-KARTE – ZUSTÄNDE
+   -------------------------------------------------------------------------- */
+
+/* Verfügbar und kaufbar */
+.upgrade-card--affordable {
+  border-color: var(--color-gold);
+  background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+}
+
+.upgrade-card--affordable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
+}
+
+.upgrade-card--affordable:active {
+  transform: scale(0.99);
+}
+
+.upgrade-card--affordable .upgrade-card__price {
+  color: var(--color-gold);
+}
+
+/* Verfügbar aber nicht leistbar */
+.upgrade-card--unavailable {
+  border-color: var(--color-gray-light);
+  background-color: var(--color-gray-light);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.upgrade-card--unavailable .upgrade-card__price {
+  color: var(--color-gray);
+}
+
+.upgrade-card--unavailable:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Bereits gekauft – ausgegraut & durchgestrichen */
+.upgrade-card--purchased {
+  border-color: transparent;
+  background-color: var(--color-gray-light);
+  cursor: default;
+  opacity: 0.45;
+}
+
+.upgrade-card--purchased .upgrade-card__name {
+  text-decoration: line-through;
+  color: var(--color-gray);
+}
+
+.upgrade-card--purchased .upgrade-card__price {
+  display: none;
+}
+
+.upgrade-card--purchased:hover {
+  transform: none;
+}
+
+/* Gekauft-Stempel */
+.upgrade-card--purchased::after {
+  content: '✓ Gekauft';
+  position: absolute;
+  right: var(--spacing-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  color: var(--color-gray);
+}
+
+/* Versteckt (Bedingung nicht erfüllt) */
+.upgrade-card--hidden {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------
+   SHOP – ABSCHNITT-HEADER (optional, falls Kategorien gewünscht)
+   -------------------------------------------------------------------------- */
+.shop-section-header {
+  font-size: var(--font-size-xs);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-brown-light);
+  padding: var(--spacing-sm) 0 var(--spacing-xs);
+  border-bottom: 1px solid var(--color-pink-light);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* --------------------------------------------------------------------------
+   SHOP – LEER-ZUSTAND
+   -------------------------------------------------------------------------- */
+.shop-empty {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--color-gray);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+}
+
+/* --------------------------------------------------------------------------
+   TOOLTIP für Gebäude (hover-Vorschau CPS-Beitrag)
+   -------------------------------------------------------------------------- */
+.building-card[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--color-brown-dark);
+  color: var(--color-white);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 50;
+}
